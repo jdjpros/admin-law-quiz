@@ -435,6 +435,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       <span class="user-name" id="userName"></span>
       <span class="sync-status" id="syncStatus">●</span>
       <button class="sync-btn mini" onclick="manualSync()">🔄 동기화</button>
+      <button class="sync-btn mini info-btn" onclick="importLocalProgress()">📦 로컬 가져오기</button>
       <button class="sync-btn mini danger" onclick="signOut()">로그아웃</button>
     </span>
     <!-- 비로그인 상태 -->
@@ -11358,6 +11359,17 @@ function pushToCloud(uid, showMsg){
 function manualSync(){
   if(!currentUser){ alert('로그인이 필요합니다.'); return; }
   pushToCloud(currentUser.uid, true);
+}
+
+// ── 로컬 진도 수동 가져오기 (버튼) ────────────────────
+function importLocalProgress(){
+  if(!currentUser){ alert('로그인이 필요합니다.'); return; }
+  var localCount = Object.keys(state).length;
+  if(localCount === 0){
+    alert('이 기기에 저장된 진도가 없습니다.');
+    return;
+  }
+  showLocalMigrateModal(currentUser.uid, localCount);
 }
 
 // ── 로컬 저장 (기존 그대로) ──────────────────────────
