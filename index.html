@@ -11222,20 +11222,109 @@ function loadCloudState(uid){
   if(status){ status.className = 'sync-status syncing'; status.textContent = '↻'; }
   fbDb.ref('users/' + uid + '/state').once('value')
     .then(function(snap){
-      var data = snap.val();
-      if(data){
-        state = data;
+      var cloudData = snap.val();
+      var localData = state;
+      var localCount = Object.keys(localData).length;
+
+      if(cloudData){
+        // 클라우드 데이터 있음 → 그냥 불러오기
+        state = cloudData;
         saveState();
         renderAll();
         updateProg();
+        if(status){ status.className = 'sync-status'; status.textContent = '●'; }
+        startAutoSync(uid);
+      } else if(localCount > 0){
+        // 클라우드 없고 로컬 진도 있음 → 사용자에게 물어보기
+        if(status){ status.className = 'sync-status'; status.textContent = '●'; }
+        showLocalMigrateModal(uid, localCount);
+      } else {
+        // 둘 다 없음 → 새로 시작
+        if(status){ status.className = 'sync-status'; status.textContent = '●'; }
+        startAutoSync(uid);
       }
+    })
+    .catch(function(e){
+      if(status){ status.className = 'sync-status error'; status.textContent = '●'; }
+    });
+}
+
+// ── 로컬 진도 마이그레이션 모달 ────────────────────────
+// uid를 전역 변수로 임시 저장해서 onclick 따옴표 충돌 방지
+var _migrateUid = null;
+
+function showLocalMigrateModal(uid, count){
+  _migrateUid = uid;
+
+  var overlay = document.createElement('div');
+  overlay.id = 'migrateOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:99998;backdrop-filter:blur(4px)';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:var(--surface);border-radius:16px;padding:32px;width:320px;max-width:90vw;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)';
+
+  var icon = document.createElement('div');
+  icon.style.cssText = 'font-size:40px;margin-bottom:12px';
+  icon.textContent = '📦';
+
+  var title = document.createElement('h3');
+  title.style.cssText = 'margin:0 0 10px;font-size:17px;color:var(--text)';
+  title.textContent = '기존 진도 발견!';
+
+  var desc = document.createElement('p');
+  desc.style.cssText = 'font-size:13px;color:var(--dim);line-height:1.7;margin:0 0 24px';
+  desc.innerHTML = '이 기기에 저장된 진도 <strong>' + count + '개</strong>를<br>클라우드에 올릴까요?<br><span style="font-size:12px;color:var(--muted)">올리면 모든 기기에서 이어서 공부할 수 있어요</span>';
+
+  var btnWrap = document.createElement('div');
+  btnWrap.style.cssText = 'display:flex;gap:10px;justify-content:center';
+
+  var btnOk = document.createElement('button');
+  btnOk.style.cssText = 'flex:1;padding:11px;border-radius:8px;background:var(--c0);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:600';
+  btnOk.textContent = '☁️ 올리기';
+  btnOk.onclick = function(){ migrateLocal(_migrateUid); };
+
+  var btnSkip = document.createElement('button');
+  btnSkip.style.cssText = 'flex:1;padding:11px;border-radius:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);cursor:pointer;font-size:14px';
+  btnSkip.textContent = '새로 시작';
+  btnSkip.onclick = function(){ skipMigrate(_migrateUid); };
+
+  btnWrap.appendChild(btnOk);
+  btnWrap.appendChild(btnSkip);
+  box.appendChild(icon);
+  box.appendChild(title);
+  box.appendChild(desc);
+  box.appendChild(btnWrap);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+// ── 로컬 진도 → 클라우드 업로드 ────────────────────────
+function migrateLocal(uid){
+  var overlay = document.getElementById('migrateOverlay');
+  if(overlay) overlay.remove();
+  var status = document.getElementById('syncStatus');
+  if(status){ status.className = 'sync-status syncing'; status.textContent = '↻'; }
+  fbDb.ref('users/' + uid + '/state').set(state)
+    .then(function(){
       if(status){ status.className = 'sync-status'; status.textContent = '●'; }
-      // 이후 자동 저장 (30초마다)
+      var info = document.getElementById('syncInfo');
+      if(info){ info.textContent = '✅ 기존 진도 업로드 완료!'; setTimeout(function(){ info.textContent=''; }, 3000); }
       startAutoSync(uid);
     })
     .catch(function(e){
       if(status){ status.className = 'sync-status error'; status.textContent = '●'; }
     });
+}
+
+// ── 마이그레이션 건너뜀 → 빈 상태로 새로 시작 ─────────
+function skipMigrate(uid){
+  var overlay = document.getElementById('migrateOverlay');
+  if(overlay) overlay.remove();
+  state = {};
+  saveState();
+  renderAll();
+  updateProg();
+  startAutoSync(uid);
 }
 
 // ── 자동 동기화 (30초마다 저장) ───────────────────────
