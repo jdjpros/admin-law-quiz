@@ -629,6 +629,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       <button class="tbtn act" id="btnAll" onclick="setMode('all')">📖 학습모드</button>
       <button class="tbtn" id="btnReview" onclick="setMode('review')">🔁 복습모드</button>
       <button class="tbtn" id="btnGlobalReview" onclick="setMode('globalReview')" title="전범위 △·X 지문 한번에 보기">🌐 전범위복습</button>
+      <button class="tbtn" id="btnHelp" onclick="setMode('help')">📖 설명서</button>
       <button class="tbtn ract" id="btnReviewReset" onclick="resetReview()" style="display:none">🗑 복습 초기화</button>
       <button class="tbtn" id="btnResetAll" onclick="resetAll()">전체 초기화</button>
     </div>
@@ -659,9 +660,9 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
     <div class="plan-row">
       <span class="plan-label">🎯 목표 회독 수</span>
       <div style="display:flex;gap:8px;margin-top:4px;">
-        <button class="plan-goal-btn act" id="goalBtn3" onclick="selectGoal(3)">3회독<br><span style="font-size:9px;opacity:.7;">단기</span></button>
+        <button class="plan-goal-btn" id="goalBtn3" onclick="selectGoal(3)">3회독<br><span style="font-size:9px;opacity:.7;">단기</span></button>
         <button class="plan-goal-btn" id="goalBtn6" onclick="selectGoal(6)">6회독<br><span style="font-size:9px;opacity:.7;">표준</span></button>
-        <button class="plan-goal-btn" id="goalBtn9" onclick="selectGoal(9)">9회독<br><span style="font-size:9px;opacity:.7;">완벽</span></button>
+        <button class="plan-goal-btn act9" id="goalBtn9" onclick="selectGoal(9)">9회독<br><span style="font-size:9px;opacity:.7;">완벽</span></button>
       </div>
     </div>
     <div class="plan-row">
@@ -679,8 +680,16 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
         <span style="font-size:11px;color:var(--muted);">일 (전체 569문항 기준, 권장 21일)</span>
       </div>
     </div>
+    <div class="plan-row">
+      <span class="plan-label">📅 주말 학습 여부</span>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="plan-goal-btn act" id="weekendBtnY" onclick="selectWeekend(true)" style="font-size:12px;padding:7px;">✅ 주말 포함</button>
+        <button class="plan-goal-btn" id="weekendBtnN" onclick="selectWeekend(false)" style="font-size:12px;padding:7px;">🚫 주말 제외</button>
+      </div>
+      <div id="weekendNote" style="font-size:10.5px;color:var(--muted);margin-top:4px;"></div>
+    </div>
     <div class="plan-preview" id="planPreview">시험일을 입력하면 일정이 표시됩니다.</div>
-    <button class="plan-btn" onclick="savePlan()">플랜 저장하기</button>
+    <button class="plan-btn" onclick="savePlan()">📅 플랜 저장하기</button>
     <button class="plan-btn secondary" onclick="closePlanOverlay()">나중에 설정</button>
   </div>
 </div>
@@ -727,6 +736,9 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 
   </div>
 </div>
+
+<!-- 설명서 패널 -->
+<div class="dash-panel" id="helpPanel" style="display:none;"></div>
 
 <div class="container">
   <div id="todayPlanBanner"></div>
@@ -11387,6 +11399,8 @@ function initFirebase() {
     fbDb = firebase.database();
     fbAuth = firebase.auth();
     firebaseReady = true;
+    // 삼성 브라우저 리다이렉트 결과 처리
+    handleRedirectResult();
 
     // 로그인 상태 감지 - 자동으로 처리
     fbAuth.onAuthStateChanged(function(user) {
@@ -11440,8 +11454,25 @@ function showGuestUI(){
 function signInWithGoogle(){
   if(!firebaseReady){ alert('Firebase가 설정되지 않았습니다.'); return; }
   var provider = new firebase.auth.GoogleAuthProvider();
+  // 삼성 인터넷 등 팝업 미지원 브라우저 대응: redirect 폴백
   fbAuth.signInWithPopup(provider).catch(function(e){
-    alert('로그인 실패: ' + e.message);
+    if(e.code==='auth/popup-blocked'||e.code==='auth/popup-closed-by-user'||e.code==='auth/operation-not-supported-in-this-environment'){
+      // 팝업 불가 → 리다이렉트 방식으로 전환
+      fbAuth.signInWithRedirect(provider).catch(function(e2){
+        alert('로그인 실패: ' + e2.message);
+      });
+    } else {
+      alert('로그인 실패: ' + e.message);
+    }
+  });
+}
+// 리다이렉트 후 결과 처리 (삼성 브라우저용)
+function handleRedirectResult(){
+  if(!firebaseReady||!fbAuth) return;
+  fbAuth.getRedirectResult().then(function(result){
+    if(result&&result.user){ /* onAuthStateChanged가 처리 */ }
+  }).catch(function(e){
+    if(e.code&&e.code!=='auth/no-such-provider') console.warn('redirect result:',e.message);
   });
 }
 
@@ -11747,14 +11778,19 @@ function setMode(m){
   document.getElementById('btnAll').className='tbtn'+(m==='all'?' act':'');
   document.getElementById('btnReview').className='tbtn'+(m==='review'?' ract':'');
   document.getElementById('btnGlobalReview').className='tbtn'+(m==='globalReview'?' act':'');
+  document.getElementById('btnHelp').className='tbtn'+(m==='help'?' act':'');
   document.getElementById('btnReviewReset').style.display=(m==='review'||m==='globalReview')?'inline-block':'none';
   document.getElementById('btnResetAll').style.display=(m==='all'||m==='plan')?'inline-block':'none';
   var dashPanel=document.getElementById('dashPanel');
+  var helpPanel=document.getElementById('helpPanel');
   var mainCont=document.getElementById('qContainer');
   var progWrap=document.querySelector('.prog-wrap');
   var resultBanner=document.getElementById('resultBanner');
   var bulkBar=document.getElementById('bulkBar');
   var todayBanner=document.getElementById('todayPlanBanner');
+  // 모든 패널 초기화
+  if(dashPanel) dashPanel.className='dash-panel';
+  if(helpPanel) helpPanel.style.display='none';
   if(m==='dash'){
     if(dashPanel) dashPanel.className='dash-panel active';
     if(mainCont) mainCont.style.display='none';
@@ -11763,8 +11799,14 @@ function setMode(m){
     if(bulkBar) bulkBar.style.display='none';
     if(todayBanner) todayBanner.style.display='none';
     renderDashboard();
+  } else if(m==='help'){
+    if(helpPanel){ helpPanel.style.display='block'; renderHelpPanel(); }
+    if(mainCont) mainCont.style.display='none';
+    if(progWrap) progWrap.style.display='none';
+    if(resultBanner) resultBanner.style.display='none';
+    if(bulkBar) bulkBar.style.display='none';
+    if(todayBanner) todayBanner.style.display='none';
   } else {
-    if(dashPanel) dashPanel.className='dash-panel';
     if(mainCont) mainCont.style.display='';
     if(progWrap) progWrap.style.display='';
     if(resultBanner) resultBanner.style.display='';
@@ -12998,9 +13040,9 @@ function calcPlan(startDate, examDate, d1Override, goalRounds){
 
   var roundDefs=allDefs.slice(0,goal).map(function(d,i){ return Object.assign({},d,{days:allDays[i]}); });
 
-  // 일수 부족 시 비율 축소
+  // 일수 부족 시 비율 축소 (주말 제외 옵션 반영)
   var totalNeeded=roundDefs.reduce(function(s,d){return s+d.days;},0);
-  var totalAvail=diffDays(startDate,examDate);
+  var totalAvail=getAvailStudyDays(startDate,examDate);
   if(totalAvail<totalNeeded){
     var scale=totalAvail/totalNeeded;
     roundDefs=roundDefs.map(function(d){ return Object.assign({},d,{days:Math.max(1,Math.round(d.days*scale))}); });
@@ -13022,17 +13064,19 @@ function calcPlan(startDate, examDate, d1Override, goalRounds){
   var rounds=[], cur=startDate;
   roundDefs.forEach(function(rd,ri){
     var tc=Math.max(1,wc[ri]||totalQ);
+    var endDate = addStudyDays(cur, rd.days-1); // 주말 제외 옵션 반영
     rounds.push({
-      round:rd.round, startDate:cur, endDate:addDays(cur,rd.days-1),
+      round:rd.round, startDate:cur, endDate:endDate,
       days:rd.days, targetCount:tc, qPerDay:Math.max(1,Math.ceil(tc/rd.days)),
       isFullRound:rd.isFullRound, resetBefore:rd.resetBefore, label:rd.label
     });
-    cur=addDays(addDays(cur,rd.days-1),1);
+    cur=addStudyDays(endDate, 1);
   });
 
   var doneQ=allQ.filter(function(q){return isQDone(q);});
   return {
     startDate:startDate, examDate:examDate, d1:D1, goalRounds:goal,
+    includeWeekend: planIncludeWeekend,
     wrongRatio:r, rounds:rounds, hasProgress:doneQ.length>0,
     progressCount:doneQ.length, totalCount:totalQ, createdAt:todayStr()
   };
@@ -13045,6 +13089,12 @@ function getTodayPlan(){
   var today = todayStr();
   if(today < plan.startDate) return { status:'notStarted', plan:plan };
   if(today > plan.examDate)  return { status:'done', plan:plan };
+
+  // 주말 제외 옵션: 오늘이 주말이면 "오늘은 쉬는 날" 반환
+  if(plan.includeWeekend===false){
+    var dow = parseDate(today).getDay();
+    if(dow===0||dow===6) return { status:'weekend', plan:plan };
+  }
 
   var allQ = getAllQuestions();
 
@@ -13188,6 +13238,10 @@ function renderTodayBanner(){
     el.innerHTML='<div class="today-plan-banner"><div class="tpb-round">📅 플랜 예정</div><div class="tpb-main">시작일: <span>'+tp.plan.startDate+'</span></div><div class="tpb-sub">아직 시작 전입니다. D-'+diffDays(todayStr(),tp.plan.startDate)+'</div><div class="tpb-actions"><button class="tpb-btn settings" onclick="openPlanOverlay()">⚙ 플랜 수정</button></div></div>';
     return;
   }
+  if(tp.status==='weekend'){
+    el.innerHTML='<div class="today-plan-banner" style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8)"><div class="tpb-round">🏖 주말</div><div class="tpb-main">오늘은 <span>쉬는 날</span>이에요!</div><div class="tpb-sub">주말 제외 플랜 적용 중 · 내일 학습이 이어집니다.</div><div class="tpb-actions"><button class="tpb-btn settings" onclick="openPlanOverlay()">⚙ 플랜 수정</button></div></div>';
+    return;
+  }
   if(tp.status==='done'){
     el.innerHTML='<div class="today-plan-banner" style="background:linear-gradient(135deg,#064e3b,#065f46)"><div class="tpb-round">🏆 플랜 완료</div><div class="tpb-main">시험 준비 완료!</div><div class="tpb-sub">수고하셨습니다.</div></div>';
     return;
@@ -13307,11 +13361,14 @@ function openPlanOverlay(){
     document.getElementById('planExamDate').value  = plan.examDate;
     document.getElementById('planStartDate').value = plan.startDate;
     document.getElementById('planD1').value        = plan.d1||21;
+    planIncludeWeekend = plan.includeWeekend !== false; // 저장된 값 복원
   } else {
     document.getElementById('planStartDate').value = today;
     document.getElementById('planD1').value        = 21;
+    planIncludeWeekend = true;
   }
   selectGoal(goal);
+  selectWeekend(planIncludeWeekend);
   updatePlanPreview();
   document.getElementById('planOverlay').style.display='flex';
   ['planExamDate','planStartDate','planD1'].forEach(function(id){
@@ -13335,7 +13392,7 @@ function updatePlanPreview(){
   var rPct       = Math.round(rInfo.rActual*100);
   var completionPct = Math.round(rInfo.completionRate*100);
   var goal       = planGoalRounds||9;
-  var totalAvail = diffDays(startDate, examDate);
+  var totalAvail = getAvailStudyDays(startDate, examDate);
 
   // ── 기능1: 회독 추천 계산 ──
   var min3 = calcMinDaysForGoal(d1Val,r,3);
@@ -13438,17 +13495,21 @@ function savePlan(){
 // ── 기능2: △·X 비율 변화 감지 + 재조정 알림 ────────────
 function checkRatioChange(){
   var plan = loadPlan();
-  if(!plan) return;
+  if(!plan) return null;
   var savedR = plan.savedWrongRatio || 0.5;
-  var currentR = calcWrongRatio().r;
+  var rInfo = calcWrongRatio();
+  var currentR = rInfo.r;
+  // 판정 완료율 30% 미만이면 알림 억제 (데이터 부족)
+  if(rInfo.completionRate < 0.3) return null;
   var diff = Math.abs(currentR - savedR);
-  // 20% 이상 차이 나면 알림
   if(diff < 0.20) return null;
   return {
-    savedR: savedR,
-    currentR: currentR,
-    diff: diff,
-    direction: currentR > savedR ? 'up' : 'down'
+    savedR:         savedR,
+    currentR:       currentR,
+    actualR:        rInfo.rActual,
+    completionRate: rInfo.completionRate,
+    diff:           diff,
+    direction:      currentR > savedR ? 'up' : 'down'
   };
 }
 
@@ -13488,38 +13549,226 @@ function dismissRatioAlert(){
 // setMode에 plan 모드 추가
 var _origSetMode = setMode;
 
-loadState();       // 로컬 상태 먼저 로드
-migrateReviewFlags(); // ☆ 복습필요 → △ 자동 변환 (최초 1회)
-initTimerBarState(); // 타이머 접힘 상태 복원
+loadState();
+migrateReviewFlags();
+initTimerBarState();
 renderTabs();
 renderAll();
 updateProg();
 updateTodayUI();
 renderTodayBanner();
-initFirebase();   // Firebase + 로그인 상태 감지 (비동기)
-// 대시보드를 기본 화면으로
+initFirebase();
+// ⑦ 삼성 뒤로가기 버튼 방지
+history.pushState(null, null, location.href);
+window.addEventListener('popstate', function(){
+  history.pushState(null, null, location.href);
+});
+
 setTimeout(function(){
   setMode('dash');
-  // 기능2: 비율 변화 알림 (대시보드 진입 시 자동 체크)
   setTimeout(renderRatioAlert, 300);
 }, 50);
 
-// 플랜 없으면 첫 진입시 자동 오버레이
 setTimeout(function(){
   if(!loadPlan()){
-    // 살짝 지연 후 팝업 (로그인 오버레이와 겹치지 않게)
     var checkLogin = setInterval(function(){
       var lo = document.getElementById('loginOverlay');
       if(!lo || lo.style.display==='none'){
         clearInterval(checkLogin);
-        // 3초 후 플랜 설정 유도
-        setTimeout(function(){
-          if(!loadPlan()) openPlanOverlay();
-        }, 2000);
+        setTimeout(function(){ if(!loadPlan()) openPlanOverlay(); }, 2000);
       }
     }, 500);
   }
 },100);
+
+// ════════════════════════════════════════
+// ② 주말 제외 옵션
+// ════════════════════════════════════════
+var planIncludeWeekend = true;
+
+function selectWeekend(include){
+  planIncludeWeekend = include;
+  var btnY = document.getElementById('weekendBtnY');
+  var btnN = document.getElementById('weekendBtnN');
+  var note = document.getElementById('weekendNote');
+  if(btnY) btnY.className = 'plan-goal-btn'+(include?' act':'');
+  if(btnN) btnN.className = 'plan-goal-btn'+(!include?' act':'');
+  if(note){
+    if(!include){
+      var startDate = document.getElementById('planStartDate').value;
+      var examDate  = document.getElementById('planExamDate').value;
+      if(startDate&&examDate){
+        var wd = countWeekdays(startDate, examDate);
+        note.textContent = '평일만 '+wd+'일 학습 (주말 제외)';
+      }
+    } else { note.textContent=''; }
+  }
+  updatePlanPreview();
+}
+
+// 두 날짜 사이 평일 수 계산
+function countWeekdays(start, end){
+  var d = parseDate(start), e = parseDate(end), cnt = 0;
+  while(d <= e){ var day = d.getDay(); if(day!==0&&day!==6) cnt++; d.setDate(d.getDate()+1); }
+  return cnt;
+}
+
+// 평일 기준 N일 후 날짜
+function addWeekdays(startStr, n){
+  var d = parseDate(startStr), cnt = 0;
+  while(cnt < n){ d.setDate(d.getDate()+1); var day=d.getDay(); if(day!==0&&day!==6) cnt++; }
+  return dateStr(d);
+}
+
+// 가용 학습일수 (주말 제외 옵션 반영)
+function getAvailStudyDays(startStr, endStr){
+  return planIncludeWeekend
+    ? diffDays(startStr, endStr)
+    : countWeekdays(startStr, endStr);
+}
+
+// 학습일수 기준 날짜 계산
+function addStudyDays(startStr, n){
+  return planIncludeWeekend ? addDays(startStr, n) : addWeekdays(startStr, n);
+}
+
+// ════════════════════════════════════════
+// ④ 회독 알고리즘 수정
+// 2차/3차는 "오늘 분량 중 △·X" 가 아니라
+// "이 세트(1/4/7회독)에서 발생한 전체 △·X" 기준
+// ════════════════════════════════════════
+
+// 현재 세트의 기준 회독이 초기화된 이후 생긴 △·X 전체
+function getSetWrongQs(){
+  var allQ = getAllQuestions();
+  return allQ.filter(function(q){ return hasWrongOrConfused(q); });
+}
+
+// getPassQuestions 오버라이드
+// passNum=1: 오늘 범위 전체 (학습모드)
+// passNum=2,3: 이 세트의 전체 △·X 중 오늘 범위에 해당하는 것
+function getPassQuestions(todayQs, roundIdx, passNum, today){
+  if(passNum===1) return todayQs; // 1차: 오늘 범위 전체
+
+  // 2차/3차: 오늘 범위 문제 중 △·X인 것
+  // (2차와 3차 모두 같은 풀에서 보되 3차는 2차에서 또 △·X인 것)
+  var wrongInToday = todayQs.filter(function(q){ return hasWrongOrConfused(q); });
+  return wrongInToday;
+}
+
+// ════════════════════════════════════════
+// ① 플랜 저장 버그 수정 (wrongRatio 키 통일)
+// ════════════════════════════════════════
+// savePlan에서 wrongRatio 저장 시 .r 키 기준으로 통일
+// (calcPlan에서 wrongRatio: r 로 저장하므로 일치)
+
+// ════════════════════════════════════════
+// ⑥ 진도 미달 처리 옵션 강화
+// ════════════════════════════════════════
+function catchUpPlan(){
+  var allQ = getAllQuestions();
+  var tp = getTodayPlan();
+  if(!tp||tp.status!=='active') return;
+  var notDone = allQ.slice(0, tp.endIdx).filter(function(q){ return !isQDone(q); });
+  if(notDone.length===0){ alert('밀린 문제가 없어요! 👍'); return; }
+
+  var choice = window.prompt(
+    '📋 진도 미달 처리 방법 선택\n\n'
+    +'1️⃣ 오늘 몰아치기 ('+notDone.length+'문항 추가)\n'
+    +'2️⃣ 일정 재조정 (남은 기간으로 재계산)\n'
+    +'3️⃣ 하루 분량 늘리기 (마감일 유지)\n\n'
+    +'번호를 입력하세요 (1/2/3):'
+  );
+
+  if(choice==='1'){
+    if(!confirm(notDone.length+'문항을 오늘 몰아서 학습할까요?')) return;
+    planStudyMode = true;
+    planStudyQIds = notDone.map(function(q){return q.id;});
+    setMode('plan');
+  } else if(choice==='2'){
+    replanFromToday();
+  } else if(choice==='3'){
+    // 마감일 유지, 하루 분량 늘리기
+    var plan = loadPlan();
+    if(!plan) return;
+    var remainDays = tp.roundDays - tp.dayInRound + 1;
+    var remainQs = allQ.filter(function(q){return !isQDone(q);});
+    var newQpd = Math.ceil(remainQs.length / remainDays);
+    if(!confirm('남은 '+remainDays+'일간 하루 '+newQpd+'문항씩 학습하도록 조정할까요?\n(기존: '+tp.qPerDay+'문항/일)')) return;
+    // 현재 회독의 qPerDay 조정 (플랜 내 저장)
+    plan.rounds[tp.round-1].qPerDay = newQpd;
+    plan.rounds[tp.round-1].adjusted = true;
+    savePlanData(plan);
+    renderTodayBanner();
+    renderDashboard();
+    alert('✅ 하루 분량이 '+newQpd+'문항으로 조정됐습니다.');
+  }
+}
+
+// ════════════════════════════════════════
+// ⑤ 설명서 탭
+// ════════════════════════════════════════
+function renderHelpPanel(){
+  var el = document.getElementById('helpPanel');
+  if(!el) return;
+  el.innerHTML = `
+  <div style="max-width:920px;margin:0 auto;padding:16px 14px 60px;">
+    <div class="dash-section">
+      <div class="dash-title">📖 행정법 퀴즈 사용 설명서</div>
+      <div style="font-size:13px;color:var(--dim);line-height:1.9;">
+
+        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">🎯 기본 개념</p>
+        <p>각 지문마다 <b>O / △ / X</b> 버튼으로 판정합니다.</p>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0 14px;">
+          <tr style="background:var(--surface2);"><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">버튼</th><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">의미</th><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">다음 차수</th></tr>
+          <tr><td style="padding:6px 10px;border:1px solid var(--border);">✅ O</td><td style="padding:6px 10px;border:1px solid var(--border);">완벽히 알겠다</td><td style="padding:6px 10px;border:1px solid var(--border);">제외</td></tr>
+          <tr style="background:var(--surface2);"><td style="padding:6px 10px;border:1px solid var(--border);">🔁 △</td><td style="padding:6px 10px;border:1px solid var(--border);">한 번 더 볼게</td><td style="padding:6px 10px;border:1px solid var(--border);">포함</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid var(--border);">❌ X</td><td style="padding:6px 10px;border:1px solid var(--border);">모르겠다/틀렸다</td><td style="padding:6px 10px;border:1px solid var(--border);">포함</td></tr>
+        </table>
+
+        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">🔄 회독 구조</p>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0 14px;">
+          <tr style="background:var(--surface2);"><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">회독</th><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">1차</th><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">2·3차</th><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">특이사항</th></tr>
+          <tr><td style="padding:6px 10px;border:1px solid var(--border);">1회독</td><td style="padding:6px 10px;border:1px solid var(--border);">전체 569문항 📖</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">-</td></tr>
+          <tr style="background:var(--surface2);"><td style="padding:6px 10px;border:1px solid var(--border);">2~3회독</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">-</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid var(--border);">4회독</td><td style="padding:6px 10px;border:1px solid var(--border);">전체 569문항 📖</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">🔄 초기화 후 시작</td></tr>
+          <tr style="background:var(--surface2);"><td style="padding:6px 10px;border:1px solid var(--border);">5~6회독</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">-</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid var(--border);">7회독</td><td style="padding:6px 10px;border:1px solid var(--border);">전체 569문항 📖</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">🔄 초기화 후 시작</td></tr>
+          <tr style="background:var(--surface2);"><td style="padding:6px 10px;border:1px solid var(--border);">8~9회독</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">최종 마무리</td></tr>
+        </table>
+
+        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">📋 메뉴 설명</p>
+        <ul style="padding-left:18px;margin:0 0 14px;">
+          <li><b>📊 대시보드</b> — 오늘 플랜 현황, 진도 분석, 회독 캘린더</li>
+          <li><b>📖 학습모드</b> — 단원별 전체 문제 학습 (1·4·7회독 1차)</li>
+          <li><b>🔁 복습모드</b> — 현재 단원의 △·X 지문만</li>
+          <li><b>🌐 전범위복습</b> — 모든 단원의 △·X 지문 한번에</li>
+        </ul>
+
+        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">☁️ 동기화</p>
+        <ul style="padding-left:18px;margin:0 0 14px;">
+          <li>구글 로그인 시 모든 기기에서 자동 동기화</li>
+          <li>JSON 내보내기로 백업, 불러오기로 복원 가능</li>
+          <li>로그인 없이 시작 시 이 기기에만 저장됨</li>
+        </ul>
+
+        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">⏱ 타이머</p>
+        <p>상단 ⏱ 버튼으로 접기/펼치기. 오늘 학습량과 연속 학습일 자동 기록.</p>
+
+        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">📅 회독 플랜</p>
+        <ul style="padding-left:18px;margin:0;">
+          <li>시험일 입력 → 가능한 회독 수 자동 추천</li>
+          <li>△·X 비율이 변하면 자동 재조정 알림</li>
+          <li>주말 포함/제외 선택 가능</li>
+          <li>진도 밀리면 몰아치기/재조정/하루분량 늘리기 선택</li>
+        </ul>
+      </div>
+    </div>
+  </div>`;
+}
+
+// 설명서 탭 버튼 추가 (setMode 연동)
+
 </script>
 </body>
 </html>
