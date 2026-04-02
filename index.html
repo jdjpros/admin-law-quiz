@@ -750,11 +750,6 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
   </div>
 </div>
 
-<!-- Firebase SDK (body 끝에서 로드 - 순서 보장) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-
 <script>
 // ═══════════════════════════════════════════
 // 데이터
@@ -11386,10 +11381,14 @@ function initFirebase() {
     return;
   }
   if(typeof firebase === 'undefined') {
-    console.warn('[동기화] Firebase SDK 로드 실패');
+    console.warn('[동기화] Firebase SDK 미로드 상태 - 게스트 모드 전환');
     showGuestUI();
     return;
   }
+  initFirebaseCore();
+}
+
+function initFirebaseCore() {
   try {
     if(firebase.apps && firebase.apps.length > 0) {
       fbApp = firebase.apps[0];
@@ -13137,6 +13136,7 @@ function getTodayPlan(){
         }
       }
     }
+    var passNum    = getTodayPassNum(today, ri);  // ← 누락된 정의 복구
     var globalPass = (ROUND_PASSES[ri]||[passNum])[passNum-1] || passNum;
     var isFullPass = (passNum===1);
 
@@ -13487,7 +13487,9 @@ function savePlan(){
   savePlanData(plan);
   closePlanOverlay();
   renderTodayBanner();
-  if(document.getElementById('dashPanel').className.indexOf('active')>=0) renderDashboard();
+  // 플랜 저장 후 항상 대시보드로 전환하고 갱신
+  setMode('dash');
+  setTimeout(function(){ renderDashboard(); }, 50);
   var summary = plan.rounds.map(function(r){ return r.round+'회독:'+r.days+'일'; }).join(' / ');
   alert('📅 플랜 저장 완료!\n\n목표: '+goal+'회독\n'+summary);
 }
@@ -13557,7 +13559,33 @@ renderAll();
 updateProg();
 updateTodayUI();
 renderTodayBanner();
-initFirebase();
+
+// Firebase SDK 동적 로드 (삼성 브라우저 대응)
+// 세 스크립트를 순서대로 로드하고, 모두 완료되면 initFirebase() 호출
+(function loadFirebaseSDK(){
+  var scripts = [
+    'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js'
+  ];
+  var loaded = 0;
+  var failed = false;
+  function loadNext(idx){
+    if(idx >= scripts.length){ initFirebase(); return; }
+    var s = document.createElement('script');
+    s.src = scripts[idx];
+    s.onload = function(){ loaded++; loadNext(idx+1); };
+    s.onerror = function(){
+      if(!failed){
+        failed = true;
+        console.warn('[동기화] Firebase SDK 로드 실패 (' + scripts[idx] + ') - 게스트 모드 전환');
+        showGuestUI();
+      }
+    };
+    document.head.appendChild(s);
+  }
+  loadNext(0);
+})();
 // ⑦ 삼성 뒤로가기 버튼 방지
 history.pushState(null, null, location.href);
 window.addEventListener('popstate', function(){
