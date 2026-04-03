@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>행정법 기출문제집 OX풀이</title>
+<title>행정법 기출문제집 OX풀이 v8</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 
@@ -12104,17 +12104,54 @@ function renderBulkBar(){
 // ═══════════════════════════════════════════
 // needsReview
 // ═══════════════════════════════════════════
+// 복습 대상 판정 기준:
+//   △(confused)  → 항상 복습 대상
+//   X(failed)    → 내가 X 판정 + 실제 정답이 O → 틀림 → 복습
+//   O(mastered)  → 내가 O 판정 + 실제 정답이 X → 틀림 → 복습
+//   그 외 (O판정+실제O, X판정+실제X) → 맞음 → 복습 불필요
+
+// [헬퍼] 지문 판정(jv)이 복습 대상인지 확인
+// ox: 실제 정답 ('O' 또는 'X')
+function _isReviewTarget(jv, ox){
+  if(jv === 'confused') return true;
+  if(jv === 'failed')   return ox === 'O'; // 내가 X → 실제 O → 틀림
+  if(jv === 'mastered') return ox === 'X'; // 내가 O → 실제 X → 틀림
+  return false;
+}
+
 function needsReview(qId){
   var q = getAllQuestions().find(function(x){return x.id===qId;}); if(!q) return false;
+  // 유형2/3: Q_OPTS_BOX, Q_EXPS_BOX (index 기반, exp.ox 사용)
   if(Q_OPTS_BOX.has(qId)||Q_EXPS_BOX.has(qId)){
-    for(var i=0;i<q.exps.length;i++){ var jv=getGnJudge(qId,i); if(jv==='confused'||jv==='failed') return true; }
+    for(var i=0;i<q.exps.length;i++){
+      var jv=getGnJudge(qId,i);
+      var ox=(q.exps[i]&&q.exps[i].ox)||'O';
+      if(_isReviewTarget(jv,ox)) return true;
+    }
     return false;
   }
+  // 유형1: A~E, ㄱ~ㅈ 박스형
   var parsed=parseBoxStem(q.stem);
   if(parsed.items.length>0&&!Q3_TYPE.has(qId)){
-    return parsed.items.some(function(it){ var jv=getBoxJudge(qId,it.label); return jv==='confused'||jv==='failed'; });
+    var _lmap={'A':0,'B':1,'C':2,'D':3,'E':4,'ㄱ':0,'ㄴ':1,'ㄷ':2,'ㄹ':3,'ㅁ':4,'ㅂ':5,'ㅅ':6,'ㅇ':7,'ㅈ':8};
+    return parsed.items.some(function(it){
+      var jv=getBoxJudge(qId,it.label);
+      var labelIdx=(_lmap[it.label]!==undefined?_lmap[it.label]:0);
+      var bexp=(q.bexps&&q.bexps[labelIdx])||null;
+      var exp=bexp||q.exps[labelIdx]||{ox:'O'};
+      var ox=exp.ox||'O';
+      return _isReviewTarget(jv,ox);
+    });
   }
-  for(var i2=1;i2<=q.opts.length;i2++){ var jv2=getOptJudge(qId,i2); if(jv2==='confused'||jv2==='failed') return true; }
+  // 일반 4지선다: isOtype/X_TYPE 구분, ans 기준으로 각 지문 ox 계산
+  var isOtype=O_TYPE.has(qId);
+  for(var i2=1;i2<=q.opts.length;i2++){
+    var jv2=getOptJudge(qId,i2);
+    // 지문의 실제 ox: O형 → 정답 번호가 O, X형 → 정답 번호가 X
+    var isAns=(i2===q.ans);
+    var ox2=isOtype?(isAns?'O':'X'):(isAns?'X':'O');
+    if(_isReviewTarget(jv2,ox2)) return true;
+  }
   return false;
 }
 
@@ -12241,16 +12278,20 @@ function buildOptRow(q2,i){
   var isReview=(mode==='review'||mode==='globalReview');
   var isFinal=(mode==='final');
 
-  // 복습모드: 원본 △/X 지문만, 이미 임시O 처리된 건 제외
+  // 복습모드: 복습 대상 지문만 표시 (O 판정 후에도 사라지지 않고 색만 바뀜)
   if(isReview){
     var orig=getOptJudge(q2.id,idx);
-    if(orig!=='confused'&&orig!=='failed') return null; // 원본 O인 건 안 보임
-    if(isRvDone(q2.id,idx,'opt')) return null;          // 이번 차수에 O 처리한 건 사라짐
+    var _isAns0=(idx===q2.ans); var _isOtype0=O_TYPE.has(q2.id);
+    var _ox0=_isOtype0?(_isAns0?'O':'X'):(_isAns0?'X':'O');
+    if(!_isReviewTarget(orig,_ox0)) return null;
+    // isRvDone 체크 제거 → O 판정해도 지문 유지, 색만 초록으로 표시
   }
-  // 파이널모드: 원본 △/X 지문만
+  // 파이널모드: △ 또는 (X이면서 실제 지문이 O)인 경우만
   if(isFinal){
     var orig2=getOptJudge(q2.id,idx);
-    if(orig2!=='confused'&&orig2!=='failed') return null;
+    var _isAns0f=(idx===q2.ans); var _isOtype0f=O_TYPE.has(q2.id);
+    var _ox0f=_isOtype0f?(_isAns0f?'O':'X'):(_isAns0f?'X':'O');
+    if(!_isReviewTarget(orig2,_ox0f)) return null;
   }
 
   // 복습모드에서는 임시 판정, 그 외엔 원본 판정
@@ -12328,12 +12369,22 @@ function buildBoxItemRow(q2,item){
   var isFinal=(mode==='final');
   if(isReview){
     var orig=getBoxJudge(q2.id,label);
-    if(orig!=='confused'&&orig!=='failed') return null;
-    if(getRvBoxJudge(q2.id,label)==='mastered') return null;
+    var _lmap0={'A':0,'B':1,'C':2,'D':3,'E':4,'ㄱ':0,'ㄴ':1,'ㄷ':2,'ㄹ':3,'ㅁ':4,'ㅂ':5,'ㅅ':6,'ㅇ':7,'ㅈ':8};
+    var _li0=(_lmap0[label]!==undefined?_lmap0[label]:0);
+    var _bexp0=(q2.bexps&&q2.bexps[_li0])||null;
+    var _exp0=_bexp0||q2.exps[_li0]||{ox:'O'};
+    var _ox0=_exp0.ox||'O';
+    if(!_isReviewTarget(orig,_ox0)) return null;
+    // O 판정해도 사라지지 않음
   }
   if(isFinal){
     var orig2=getBoxJudge(q2.id,label);
-    if(orig2!=='confused'&&orig2!=='failed') return null;
+    var _lmap0f={'A':0,'B':1,'C':2,'D':3,'E':4,'ㄱ':0,'ㄴ':1,'ㄷ':2,'ㄹ':3,'ㅁ':4,'ㅂ':5,'ㅅ':6,'ㅇ':7,'ㅈ':8};
+    var _li0f=(_lmap0f[label]!==undefined?_lmap0f[label]:0);
+    var _bexp0f=(q2.bexps&&q2.bexps[_li0f])||null;
+    var _exp0f=_bexp0f||q2.exps[_li0f]||{ox:'O'};
+    var _ox0f=_exp0f.ox||'O';
+    if(!_isReviewTarget(orig2,_ox0f)) return null;
   }
   var jv=isReview?getRvBoxJudge(q2.id,label):getBoxJudge(q2.id,label);
   // 복습: 임시 판정 있을 때만 열림 (state._be 무시)
@@ -12402,12 +12453,14 @@ function buildGnRow(q2,item,expIdx){
   var isFinal=(mode==='final');
   if(isReview){
     var orig=getGnJudge(q2.id,expIdx);
-    if(orig!=='confused'&&orig!=='failed') return null;
-    if(getRvGnJudge(q2.id,expIdx)==='mastered') return null;
+    var _ox0=(q2.exps[expIdx]&&q2.exps[expIdx].ox)||'O';
+    if(!_isReviewTarget(orig,_ox0)) return null;
+    // O 판정해도 사라지지 않음
   }
   if(isFinal){
     var orig2=getGnJudge(q2.id,expIdx);
-    if(orig2!=='confused'&&orig2!=='failed') return null;
+    var _ox0f=(q2.exps[expIdx]&&q2.exps[expIdx].ox)||'O';
+    if(!_isReviewTarget(orig2,_ox0f)) return null;
   }
   var jv=isReview?getRvGnJudge(q2.id,expIdx):getGnJudge(q2.id,expIdx);
   // 복습: 임시 판정 있을 때만 열림 (state._be_N 무시)
@@ -13115,6 +13168,7 @@ function renderDashboard(){
         +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
         +'<button onclick="startTodayStudy()" style="padding:8px 18px;background:#fbbf24;color:#1e2540;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">'+(tp.isFullPass?'📖 학습 시작':'🔁 복습 시작')+'</button>'
         +(tp.passNum<3?'<button onclick="advancePass()" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--dim);font-family:Pretendard,sans-serif;">다음 차수 →</button>':'')
+        +(tp.passNum>1?'<button onclick="retreatPass()" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--dim);font-family:Pretendard,sans-serif;">← 이전 차수</button>':'')
         +'<button onclick="openPlanOverlay()" style="padding:8px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--muted);font-family:Pretendard,sans-serif;">⚙ 플랜 수정</button>'
         +'</div>';
     } else {
@@ -13754,26 +13808,35 @@ function getPassQuestions(todayQs, roundIdx, passNum, today){
 
 // 문제에 X 또는 △ 지문이 하나라도 있는지
 function hasWrongOrConfused(q){
-  var allQ = getAllQuestions();
-  // 일반형
-  if(!(Q_OPTS_BOX.has(q.id)||Q_EXPS_BOX.has(q.id))){
-    var parsed = parseBoxStem(q.stem);
-    if(parsed.items.length > 0 && !Q3_TYPE.has(q.id)){
-      return parsed.items.some(function(it){
-        var jv = getBoxJudge(q.id, it.label);
-        return jv==='failed'||jv==='confused';
-      });
-    }
-    for(var i=1;i<=4;i++){
-      var jv = getOptJudge(q.id,i);
-      if(jv==='failed'||jv==='confused') return true;
+  // 유형2/3: ㄱㄴㄷ형 (index 기반)
+  if(Q_OPTS_BOX.has(q.id)||Q_EXPS_BOX.has(q.id)){
+    for(var j=0;j<q.exps.length;j++){
+      var jv2 = getGnJudge(q.id,j);
+      var ox2 = (q.exps[j]&&q.exps[j].ox)||'O';
+      if(_isReviewTarget(jv2,ox2)) return true;
     }
     return false;
   }
-  // ㄱㄴㄷ형
-  for(var j=0;j<q.exps.length;j++){
-    var jv2 = getGnJudge(q.id,j);
-    if(jv2==='failed'||jv2==='confused') return true;
+  // 유형1: A~E, ㄱ~ㅈ 박스형
+  var parsed = parseBoxStem(q.stem);
+  if(parsed.items.length > 0 && !Q3_TYPE.has(q.id)){
+    var _lmapH={'A':0,'B':1,'C':2,'D':3,'E':4,'ㄱ':0,'ㄴ':1,'ㄷ':2,'ㄹ':3,'ㅁ':4,'ㅂ':5,'ㅅ':6,'ㅇ':7,'ㅈ':8};
+    return parsed.items.some(function(it){
+      var jv = getBoxJudge(q.id, it.label);
+      var liH=(_lmapH[it.label]!==undefined?_lmapH[it.label]:0);
+      var bexpH=(q.bexps&&q.bexps[liH])||null;
+      var expH=bexpH||q.exps[liH]||{ox:'O'};
+      var oxH=expH.ox||'O';
+      return _isReviewTarget(jv,oxH);
+    });
+  }
+  // 일반 4지선다
+  var isOtypeH=O_TYPE.has(q.id);
+  for(var i=1;i<=q.opts.length;i++){
+    var jv = getOptJudge(q.id,i);
+    var isAnsH=(i===q.ans);
+    var oxH2=isOtypeH?(isAnsH?'O':'X'):(isAnsH?'X':'O');
+    if(_isReviewTarget(jv,oxH2)) return true;
   }
   return false;
 }
@@ -13821,7 +13884,7 @@ function renderTodayBanner(){
 
   // 2차이상인데 passQs 없으면
   if(tp.passNum>1 && total===0){
-    el.innerHTML='<div class="today-plan-banner" style="background:linear-gradient(135deg,#064e3b,#065f46)"><div class="tpb-round">✅ '+roundLabel+'</div><div class="tpb-main">오늘 <span>'+passLabel+'</span> 완료!</div><div class="tpb-sub">틀리거나 헷갈린 지문이 없어요 🎉</div><div class="tpb-actions"><button class="tpb-btn start" onclick="advancePass()">다음 차수로 →</button><button class="tpb-btn settings" onclick="openPlanOverlay()">⚙ 플랜 수정</button></div></div>';
+    el.innerHTML='<div class="today-plan-banner" style="background:linear-gradient(135deg,#064e3b,#065f46)"><div class="tpb-round">✅ '+roundLabel+'</div><div class="tpb-main">오늘 <span>'+passLabel+'</span> 완료!</div><div class="tpb-sub">틀리거나 헷갈린 지문이 없어요 🎉</div><div class="tpb-actions"><button class="tpb-btn start" onclick="advancePass()">다음 차수로 →</button><button class="tpb-btn" onclick="retreatPass()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.75);border-radius:8px;padding:7px 13px;cursor:pointer;font-size:12px;font-weight:600;font-family:Pretendard,sans-serif;">← 이전 차수</button><button class="tpb-btn settings" onclick="openPlanOverlay()">⚙ 플랜 수정</button></div></div>';
     return;
   }
 
@@ -13834,6 +13897,7 @@ function renderTodayBanner(){
     +'<div class="tpb-actions">'
     +'<button class="tpb-btn start" onclick="startTodayStudy()">📖 오늘 학습 시작</button>'
     +(tp.passNum<3?'<button class="tpb-btn next-pass" onclick="advancePass()">다음 차수 →</button>':'')
+    +(tp.passNum>1?'<button class="tpb-btn" onclick="retreatPass()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.75);border-radius:8px;padding:7px 13px;cursor:pointer;font-size:12px;font-weight:600;font-family:Pretendard,sans-serif;">← 이전 차수</button>':'')
     +'<button class="tpb-btn settings" onclick="openPlanOverlay()">⚙ 플랜 수정</button>'
     +'</div>'
     +'</div>';
@@ -13885,7 +13949,32 @@ function advancePass(){
   window.scrollTo({top:200, behavior:'smooth'});
 }
 
-// 플랜 오버레이
+// 이전 차수로 되돌아가기
+function retreatPass(){
+  var tp = getTodayPlan();
+  if(!tp||tp.status!=='active') return;
+  var prevPass = tp.passNum - 1;
+  if(prevPass < 1){
+    alert('이미 1차입니다.');
+    return;
+  }
+  if(!confirm(prevPass+'차로 되돌아갈까요?\n(이번 차수의 임시 판정은 유지됩니다)')) return;
+  setTodayPassNum(todayStr(), tp.round-1, prevPass);
+  renderTodayBanner();
+  var tp2 = getTodayPlan();
+  if(!tp2||tp2.status!=='active') return;
+  if(!tp2.isFullPass){
+    planStudyMode = false;
+    setMode('review');
+  } else {
+    planStudyMode = true;
+    planStudyQIds = tp2.passQs.map(function(q){return q.id;});
+    setMode('plan');
+  }
+  renderDashboard();
+  window.scrollTo({top:200, behavior:'smooth'});
+}
+
 // ── 기능1: 남은 일수 → 회독 수 추천 ──────────────────
 function calcMinDaysForGoal(d1, r, goal){
   // calcPlan과 동일한 비율 사용 (D4×0.85, D7×0.70, 3회독=r×0.8)
@@ -14131,44 +14220,68 @@ function updatePlanPreview(){
   var goal       = planGoalRounds||9;
   var totalAvail = getAvailStudyDays(startDate, examDate);
 
-  // ── 기능1: 회독 추천 계산 ──
-  var min3 = calcMinDaysForGoal(d1Val,r,3);
-  var min6 = calcMinDaysForGoal(d1Val,r,6);
-  var min9 = calcMinDaysForGoal(d1Val,r,9);
-  var recommended = getRecommendedGoal(totalAvail, d1Val, r);
+  // ── 회독 추천 계산: calcPlan 실제 합계 기준 (세부 계획과 1:1 일치) ──
+  // calcPlan을 각 목표별로 실행해서 실제 필요 일수 계산
+  var plan3 = calcPlan(startDate, examDate, d1Val, 3);
+  var plan6 = calcPlan(startDate, examDate, d1Val, 6);
+  var plan9 = calcPlan(startDate, examDate, d1Val, 9);
+  // 축소 전 원래 필요 일수 (scale 적용 전)
+  function calcRawDays(d1, r, goalN){
+    var D1=d1, D4=Math.max(3,Math.round(D1*0.85)), D7=Math.max(3,Math.round(D1*0.70));
+    var days=[
+      D1, Math.max(3,Math.round(D1*r)), Math.max(2,Math.round(D1*r*0.8)),
+      D4, Math.max(3,Math.round(D4*r)), Math.max(2,Math.round(D4*r*0.8)),
+      D7, Math.max(3,Math.round(D7*r)), Math.max(2,Math.round(D7*r*0.8))
+    ];
+    return days.slice(0,goalN).reduce(function(s,d){return s+d;},0);
+  }
+  var raw3 = calcRawDays(d1Val,r,3);
+  var raw6 = calcRawDays(d1Val,r,6);
+  var raw9 = calcRawDays(d1Val,r,9);
+  // 실제 계획 합계 (자동 축소 반영)
+  var actual3 = plan3.rounds.reduce(function(s,rd){return s+rd.days;},0);
+  var actual6 = plan6.rounds.reduce(function(s,rd){return s+rd.days;},0);
+  var actual9 = plan9.rounds.reduce(function(s,rd){return s+rd.days;},0);
+
+  // 추천: 실제 계획이 가용 일수 안에 들어오는 최대 목표
+  var recommended = totalAvail>=raw9?9:totalAvail>=raw6?6:3;
 
   // 추천 배너
   var recHtml = '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;margin-bottom:10px;">';
   recHtml += '<div style="font-size:11.5px;font-weight:700;color:#166534;margin-bottom:6px;">📊 남은 기간 분석 ('+totalAvail+'일)</div>';
-  [[3,min3,'단기'],[6,min6,'표준'],[9,min9,'완벽']].forEach(function(arr){
-    var g=arr[0], minD=arr[1], lbl=arr[2];
-    var ok = totalAvail >= minD;
+  [[3,raw3,actual3,'단기'],[6,raw6,actual6,'표준'],[9,raw9,actual9,'완벽']].forEach(function(arr){
+    var g=arr[0], rawD=arr[1], actualD=arr[2], lbl=arr[3];
+    var ok = totalAvail >= rawD;   // 축소 없이 가능한지
+    var okWithScale = totalAvail >= actualD; // 축소 후 실제 가능한지
     var isRec = g===recommended;
-    var surplus = totalAvail - minD;
-    var icon = ok ? '✅' : '❌';
-    var color = ok ? '#166534' : '#991b1b';
+    var surplus = totalAvail - rawD;
+    var icon = ok ? '✅' : (okWithScale ? '⚡' : '❌');
+    var color = ok ? '#166534' : (okWithScale ? '#92400e' : '#991b1b');
     var badge = isRec ? ' <span style="background:#2563eb;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;">추천</span>' : '';
-    var note = ok
-      ? (surplus>0 ? '(+'+surplus+'일 여유)' : '(딱 맞음)')
-      : '('+Math.abs(surplus)+'일 부족)';
+    var note;
+    if(ok){
+      note = surplus>0 ? '(+'+surplus+'일 여유)' : '(딱 맞음)';
+    } else if(okWithScale){
+      note = '(일정 축소 후 '+actualD+'일로 가능)';
+    } else {
+      note = '('+Math.abs(surplus)+'일 부족)';
+    }
     recHtml += '<div style="font-size:11px;color:'+color+';margin-bottom:2px;">'
-      +icon+' '+g+'회독 '+lbl+': 최소 '+minD+'일 필요 '+note+badge+'</div>';
+      +icon+' '+g+'회독 '+lbl+': '+rawD+'일 필요 '+note+badge+'</div>';
   });
-  // 추천 버튼 강조 애니메이션
   recHtml += '<div style="font-size:11px;color:#1d4ed8;margin-top:6px;cursor:pointer;font-weight:600;" '
     +'onclick="selectGoal('+recommended+')">→ '+recommended+'회독으로 자동 선택</div>';
   recHtml += '</div>';
 
-  // 추천 목표로 버튼 업데이트 (자동 선택은 하지 않고 표시만)
+  // 버튼 상태 업데이트
   [3,6,9].forEach(function(g){
     var btn = document.getElementById('goalBtn'+g);
     if(!btn) return;
-    var minD = g===3?min3:g===6?min6:min9;
-    var ok = totalAvail>=minD;
+    var rawD = g===3?raw3:g===6?raw6:raw9;
+    var ok = totalAvail>=rawD;
     var isSelected = g===goal;
     var isRec = g===recommended;
     btn.className = 'plan-goal-btn'+(isSelected?' act'+g:'')+(ok?'':' disabled-goal');
-    // 추천 표시
     var span = btn.querySelector('.goal-rec-tag');
     if(!span){ span=document.createElement('span'); span.className='goal-rec-tag'; span.style='display:block;font-size:8px;'; btn.appendChild(span); }
     span.textContent = isRec ? '⭐추천' : (ok ? '가능' : '부족');
@@ -14551,7 +14664,8 @@ function renderHelpPanel(){
 
   + '<p style="font-weight:700;color:var(--c2);margin:10px 0 3px;">🔁 복습모드</p>'
   + '<ul style="padding-left:18px;margin:0 0 8px;">'
-  + '<li>학습모드에서 △·X로 판정된 <b>복습 대상 지문만</b> 보여줍니다</li>'
+  + '<li>학습모드에서 <b>△(한 번 더 볼게)</b> 또는 <b>X를 눌렀는데 실제 지문이 O인 경우</b>(=틀린 지문)만 복습 대상으로 표시됩니다</li>'
+  + '<li>지문 자체가 X이고 X로 판정한 경우(=맞은 것)는 복습 대상에서 제외됩니다</li>'
   + '<li>지문은 <b>닫힌 상태</b>로 시작 — 판정 버튼을 눌러야 해설이 열립니다</li>'
   + '<li>복습모드의 O/△/X 판정은 <b>임시 저장</b>으로, 원본 데이터에 영향을 주지 않습니다</li>'
   + '<li>다음 차수(예: 2차→3차)가 되면 임시 판정이 리셋되어 <b>지문이 다시 닫힌 상태</b>로 나타납니다</li>'
