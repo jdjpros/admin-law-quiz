@@ -14,10 +14,11 @@
   --text:#1a1f36; --dim:#4a5080; --muted:#8890b0; --r:10px;
   --c0:#2563eb; --c1:#0891b2; --c2:#7c3aed; --c3:#059669;
   --correct:#16a34a; --wrong:#dc2626; --warn:#d97706;
+  --app-height: 100vh; /* JS로 실제 높이 주입 (iOS Safari 대응) */
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{overflow-x:hidden;}
-body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;font-size:14px;line-height:1.7;min-height:100vh;overflow-x:hidden;max-width:100vw;}
+body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;font-size:14px;line-height:1.7;min-height:100vh;min-height:100dvh;overflow-x:hidden;max-width:100vw;}
 
 /* TOP */
 .top{background:#1a1f36;padding:11px 16px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.3);}
@@ -348,7 +349,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 @keyframes pulse{from{opacity:.7}to{opacity:1}}
 
 /* ── 회독 플랜 ── */
-.plan-overlay{position:fixed;inset:0;background:rgba(15,20,40,.85);display:flex;align-items:center;justify-content:center;z-index:99998;backdrop-filter:blur(6px);}
+.plan-overlay{position:fixed;inset:0;min-height:100vh;min-height:100dvh;background:rgba(15,20,40,.85);display:flex;align-items:center;justify-content:center;z-index:99998;backdrop-filter:blur(6px);}
 .plan-box{background:#fff;border-radius:18px;padding:32px 28px;width:420px;max-width:93vw;box-shadow:0 16px 56px rgba(0,0,0,.28);}
 .plan-box h2{font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px;}
 .plan-box p{font-size:12.5px;color:var(--dim);margin-bottom:20px;line-height:1.6;}
@@ -449,7 +450,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 
 /* ── 로그인 오버레이 ── */
 .login-overlay{
-  position:fixed; inset:0; background:rgba(15,20,40,.82);
+  position:fixed; inset:0; min-height:100vh; min-height:100dvh; background:rgba(15,20,40,.82);
   display:flex; align-items:center; justify-content:center;
   z-index:99999; backdrop-filter:blur(6px);
 }
@@ -474,6 +475,35 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
   cursor:pointer; text-decoration:underline; text-underline-offset:3px;
 }
 .login-skip:hover{ color:var(--dim); }
+/* 인앱 브라우저 안내 */
+.inapp-banner{
+  background:#fff3cd; border:1.5px solid #ffc107;
+  border-radius:12px; padding:18px 20px; text-align:center;
+}
+.inapp-banner .inapp-icon{ font-size:32px; margin-bottom:8px; }
+.inapp-banner .inapp-title{ font-size:15px; font-weight:700; color:#856404; margin-bottom:6px; }
+.inapp-banner .inapp-desc{ font-size:12.5px; color:#664d03; line-height:1.7; margin-bottom:14px; }
+.inapp-copy-btn{
+  display:inline-block; padding:10px 22px; border-radius:8px;
+  background:#ffc107; color:#000; font-size:13px; font-weight:700;
+  border:none; cursor:pointer; font-family:'Pretendard',sans-serif;
+}
+.inapp-skip-link{ display:block; margin-top:10px; font-size:11.5px; color:#856404; cursor:pointer; text-decoration:underline; }
+/* ── 단원 선택 UI ── */
+.scope-tab-row{display:flex;gap:6px;margin-bottom:12px;}
+.scope-tab{flex:1;padding:8px;border:2px solid var(--border);border-radius:8px;background:var(--surface2);cursor:pointer;font-family:'Pretendard',sans-serif;font-size:13px;font-weight:600;color:var(--muted);text-align:center;transition:all .15s;}
+.scope-tab.act{border-color:var(--c0);background:#dbeafe;color:var(--c0);}
+.scope-unit-box{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+.scope-parent{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--surface2);cursor:pointer;user-select:none;}
+.scope-parent-label{font-size:12.5px;font-weight:700;color:var(--text);flex:1;}
+.scope-parent-btns{display:flex;gap:5px;}
+.scope-parent-btn{font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:#fff;color:var(--dim);cursor:pointer;font-family:'Pretendard',sans-serif;}
+.scope-parent-btn:hover{background:var(--border);}
+.scope-mids{padding:6px 12px 8px 12px;display:flex;flex-wrap:wrap;gap:6px;}
+.scope-mid-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--dim);cursor:pointer;padding:3px 6px;border-radius:5px;transition:background .1s;}
+.scope-mid-item:hover{background:var(--surface2);}
+.scope-mid-item input{cursor:pointer;accent-color:var(--c0);}
+.scope-count{font-size:11.5px;color:var(--c0);font-weight:700;margin-top:6px;padding:6px 10px;background:#dbeafe;border-radius:6px;text-align:center;}
 /* ── 사용자 정보 ── */
 .sync-user{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .user-avatar{
@@ -515,7 +545,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 .sync-code-badge:hover{ background:#e8effe; }
 /* 모달 */
 .code-modal-overlay{
-  position:fixed; inset:0; background:rgba(0,0,0,.45);
+  position:fixed; inset:0; min-height:100vh; min-height:100dvh; background:rgba(0,0,0,.45);
   display:flex; align-items:center; justify-content:center;
   z-index:9999;
 }
@@ -559,14 +589,30 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 <!-- 로그인 오버레이 -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-box">
-    <div class="login-logo">⚖️</div>
-    <h2 class="login-title">행정법 기출문제집 OX풀이</h2>
-    <p class="login-desc">구글 계정으로 로그인하면<br>모든 기기에서 진도가 자동 동기화됩니다.</p>
-    <button class="google-login-btn" onclick="signInWithGoogle()">
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
-      Google로 로그인
-    </button>
-    <p class="login-skip" onclick="skipLogin()">로그인 없이 시작 (이 기기만 저장)</p>
+    <!-- 일반 로그인 UI -->
+    <div id="normalLoginUI">
+      <div class="login-logo">⚖️</div>
+      <h2 class="login-title">행정법 기출문제집 OX풀이</h2>
+      <p class="login-desc">구글 계정으로 로그인하면<br>모든 기기에서 진도가 자동 동기화됩니다.</p>
+      <button class="google-login-btn" onclick="signInWithGoogle()">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Google로 로그인
+      </button>
+      <p class="login-skip" onclick="skipLogin()">로그인 없이 시작 (이 기기만 저장)</p>
+    </div>
+    <!-- 인앱 브라우저 안내 UI (카카오/네이버 등) -->
+    <div id="inappLoginUI" style="display:none;" class="inapp-banner">
+      <div class="inapp-icon">🌐</div>
+      <div class="inapp-title">외부 브라우저에서 열어주세요</div>
+      <div class="inapp-desc">
+        카카오톡·네이버 앱 내 브라우저에서는<br>
+        Google 로그인이 지원되지 않습니다.<br><br>
+        아래 버튼으로 주소를 복사한 뒤<br>
+        <b>Chrome 또는 Safari</b>에서 열어주세요.
+      </div>
+      <button class="inapp-copy-btn" onclick="copyPageUrl()">🔗 주소 복사하기</button>
+      <span class="inapp-skip-link" onclick="skipLogin()">로그인 없이 시작하기</span>
+    </div>
   </div>
 </div>
 
@@ -657,6 +703,23 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
     <h2>📅 회독 플랜 설정</h2>
     <p>목표 회독 수와 시험일을 입력하면<br>△·X 비율을 반영해 전체 일정을 자동 계산합니다.</p>
 
+    <!-- 학습 범위 선택 -->
+    <div class="plan-row">
+      <span class="plan-label">📚 학습 범위</span>
+      <div class="scope-tab-row" style="margin-top:6px;">
+        <button class="scope-tab act" id="scopeTabAll" onclick="selectScope('all')">🌐 전범위</button>
+        <button class="scope-tab" id="scopeTabUnit" onclick="selectScope('unit')">📂 단원 선택</button>
+      </div>
+      <div id="scopeUnitPanel" style="display:none;">
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <button onclick="scopeSelectAll(true)" style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--c0);background:#dbeafe;color:var(--c0);cursor:pointer;font-family:Pretendard,sans-serif;">전체선택</button>
+          <button onclick="scopeSelectAll(false)" style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--dim);cursor:pointer;font-family:Pretendard,sans-serif;">전체해제</button>
+        </div>
+        <div id="scopeUnitList"></div>
+        <div class="scope-count" id="scopeCountLabel">선택된 문항: 0문항</div>
+      </div>
+    </div>
+
     <div class="plan-row">
       <span class="plan-label">🎯 목표 회독 수</span>
       <div style="display:flex;gap:8px;margin-top:4px;">
@@ -677,7 +740,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       <span class="plan-label">📖 1회독 목표 기간 (일)</span>
       <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
         <input class="plan-input" type="number" id="planD1" min="3" max="90" value="21" style="width:80px;">
-        <span style="font-size:11px;color:var(--muted);">일 (전체 569문항 기준, 권장 21일)</span>
+        <span style="font-size:11px;color:var(--muted);" id="planD1Hint">일 (전체 569문항 기준, 권장 21일)</span>
       </div>
     </div>
     <div class="plan-row">
@@ -11428,9 +11491,40 @@ function initFirebaseCore() {
 }
 
 // ── 로그인 UI 제어 ─────────────────────────────────────
+// 인앱 브라우저 감지
+function isInAppBrowser(){
+  var ua = navigator.userAgent || '';
+  return /KAKAOTALK|NAVER|Instagram|FB_IAB|FBAN|FBAV|Line\/|MicroMessenger|Snapchat/i.test(ua);
+}
+
+function copyPageUrl(){
+  var url = location.href;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){
+      alert('주소가 복사됐습니다!\nChrome 또는 Safari 주소창에 붙여넣기 해주세요.');
+    }).catch(function(){ _fallbackCopy(url); });
+  } else { _fallbackCopy(url); }
+}
+function _fallbackCopy(url){
+  var el = document.createElement('textarea');
+  el.value = url; el.style.position='fixed'; el.style.opacity='0';
+  document.body.appendChild(el); el.select();
+  try{ document.execCommand('copy'); alert('주소가 복사됐습니다!\nChrome 또는 Safari에서 열어주세요.'); }
+  catch(e){ alert('주소를 직접 복사해 주세요:\n'+url); }
+  document.body.removeChild(el);
+}
+
 function showLoginOverlay(){
   var el = document.getElementById('loginOverlay');
-  if(el) el.style.display = 'flex';
+  if(!el) return;
+  el.style.display = 'flex';
+  // 인앱 브라우저 감지 → 안내 화면 전환
+  if(isInAppBrowser()){
+    var normal = document.getElementById('normalLoginUI');
+    var inapp  = document.getElementById('inappLoginUI');
+    if(normal) normal.style.display = 'none';
+    if(inapp)  inapp.style.display  = 'block';
+  }
 }
 function hideLoginOverlay(){
   var el = document.getElementById('loginOverlay');
@@ -11500,15 +11594,52 @@ function loadCloudState(uid){
       var localCount = Object.keys(localData).length;
 
       if(cloudData){
-        // 클라우드 데이터 있음 → 그냥 불러오기
-        state = cloudData;
-        saveState();
+        // 클라우드 vs 로컬 충돌 해결: 판정 키 수가 더 많은 쪽 선택
+        var cloudCount = Object.keys(cloudData).filter(function(k){
+          return k.indexOf('_j')>0 || k.indexOf('_bj')>0 || k.indexOf('_bj_')>0;
+        }).length;
+        var localCount2 = Object.keys(localData).filter(function(k){
+          return k.indexOf('_j')>0 || k.indexOf('_bj')>0 || k.indexOf('_bj_')>0;
+        }).length;
+
+        if(localCount2 > cloudCount){
+          // 로컬이 더 많은 경우 (오프라인에서 학습했을 때)
+          var info = document.getElementById('syncInfo');
+          if(confirm(
+            '📶 오프라인 학습 데이터 감지\n\n'
+            + '로컬 기기: ' + localCount2 + '개 판정\n'
+            + '클라우드:  ' + cloudCount  + '개 판정\n\n'
+            + '로컬 데이터가 더 많습니다.\n'
+            + '로컬 데이터를 클라우드에 업로드할까요?\n'
+            + '(취소 시 클라우드 데이터로 덮어씁니다)'
+          )){
+            // 로컬 → 클라우드 업로드
+            pushToCloud(uid, true);
+          } else {
+            // 클라우드 → 로컬 덮어쓰기
+            state = cloudData;
+            saveState();
+          }
+        } else {
+          // 클라우드가 같거나 더 많음 → 클라우드 우선
+          state = cloudData;
+          saveState();
+        }
+        // 플랜의 범위 설정도 복원
+        var savedPlan = loadPlan();
+        if(savedPlan && savedPlan.scopeMode){
+          planScopeMode = savedPlan.scopeMode;
+          planScopeIds  = savedPlan.scopeIds || [];
+        }
         renderAll();
         updateProg();
         if(status){ status.className = 'sync-status'; status.textContent = '●'; }
         startAutoSync(uid);
       } else {
-        // 클라우드에 데이터 없음 → 새로 시작
+        // 클라우드에 데이터 없음 → 로컬 데이터를 클라우드에 업로드
+        if(Object.keys(localData).length > 0){
+          pushToCloud(uid, false); // 로컬 데이터 있으면 즉시 업로드
+        }
         if(status){ status.className = 'sync-status'; status.textContent = '●'; }
         startAutoSync(uid);
       }
@@ -11602,7 +11733,7 @@ function handleJsonImport(event){
       // ④ 플랜 재조정 팝업
       var plan = loadPlan();
       if(plan){
-        var doneCount = getAllQuestions().filter(function(q){ return isQDone(q); }).length;
+        var doneCount = getPlanQuestions().filter(function(q){ return isQDone(q); }).length;
         if(doneCount > 0){
           setTimeout(function(){
             if(confirm('📂 데이터 불러오기 완료!\n\n완료된 문항: '+doneCount+'개 감지됨\n\n현재 회독 플랜이 있습니다.\n완료 문항을 반영해 일정을 재조정할까요?')){
@@ -11612,7 +11743,7 @@ function handleJsonImport(event){
         }
       } else {
         setTimeout(function(){
-          var doneCount2 = getAllQuestions().filter(function(q){ return isQDone(q); }).length;
+          var doneCount2 = getPlanQuestions().filter(function(q){ return isQDone(q); }).length;
           if(doneCount2 > 0 && confirm('📂 데이터 불러오기 완료!\n\n완료된 문항: '+doneCount2+'개 감지됨\n\n회독 플랜을 설정하면 완료 문항이\n자동으로 반영됩니다.\n지금 플랜을 설정할까요?')){
             openPlanOverlay();
           }
@@ -11699,6 +11830,27 @@ function saveState(){
     if(saveState._t) clearTimeout(saveState._t);
     saveState._t = setTimeout(function(){ pushToCloud(currentUser.uid, false); }, 500);
   }
+}
+
+// rv_ 임시 판정 키 정리 (3일 이상 된 키 자동 삭제)
+function cleanOldRvKeys(){
+  try{
+    var today = todayStr();
+    var cutoff = (function(){
+      var d = new Date(); d.setDate(d.getDate()-3);
+      return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+    })();
+    var toDelete = [];
+    for(var i=0; i<localStorage.length; i++){
+      var k = localStorage.key(i);
+      if(!k || k.indexOf('rv_')!==0) continue;
+      // 키 형식: rv_YYYY-MM-DD_pN_...
+      var dateMatch = k.match(/^rv_(\d{4}-\d{2}-\d{2})_/);
+      if(dateMatch && dateMatch[1] < cutoff) toDelete.push(k);
+    }
+    toDelete.forEach(function(k){ localStorage.removeItem(k); });
+    if(toDelete.length>0) console.log('[정리] rv_ 임시 키 '+toDelete.length+'개 삭제');
+  }catch(e){}
 }
 
 // [구 방식 제거: getSyncCode]
@@ -11848,14 +12000,13 @@ function resetAll(){
   renderAll(); updateProg();
 }
 function resetReview(){
-  if(!confirm('⚠️ 복습 초기화\n\n현재 단원의 O/△/X 판단과\n해설 열람 상태가 모두 초기화됩니다.\n\n정말 초기화하시겠습니까?')) return;
-  var Qs=getCurrentData();
-  Qs.forEach(function(q){
-    delete state[q.id+'_j']; delete state[q.id+'_bj']; delete state[q.id+'_e']; delete state[q.id+'_be'];
-    delete state[q.id+'_r']; delete state[q.id+'_br'];
-    for(var i=0;i<10;i++){ delete state[q.id+'_bj_'+i]; delete state[q.id+'_be_'+i]; delete state[q.id+'_br_'+i]; }
+  if(!confirm('⚠️ 복습 초기화\n\n이번 복습 세션의 임시 판정이 초기화됩니다.\n(학습모드의 O/△/X 원본 데이터는 유지)\n\n초기화하시겠습니까?')) return;
+  // 임시 판정 키(rv_*)만 삭제 → 원본 state 영향 없음
+  var rvPrefix = 'rv_';
+  Object.keys(localStorage).forEach(function(k){
+    if(k.indexOf(rvPrefix)===0) localStorage.removeItem(k);
   });
-  saveState(); renderAll(); updateProg();
+  renderAll(); updateProg();
 }
 
 // ═══════════════════════════════════════════
@@ -12109,8 +12260,12 @@ function buildOptRow(q2,i){
   var isAns=(idx===q2.ans); var isOtype=O_TYPE.has(q2.id);
   var isCorrectOx=isOtype?(isAns?'O':'X'):(isAns?'X':'O');
   var jCls=jv?({mastered:'judged-m',confused:'judged-c',failed:'judged-f'}[jv]):'';
-  // 복습/파이널은 해설 항상 펼침
-  var expCls=(isReview||isFinal)?' exp-open':((!!(state[q2.id+'_e']||{})[idx])?' exp-open':'');
+  // 파이널: 항상 펼침
+  // 복습: 임시 판정이 있을 때만 펼침 (state._e 무시 → 항상 닫힌 상태로 시작)
+  // 학습: 원본 열람 기록(state._e)이 있으면 펼침
+  var expCls = isFinal ? ' exp-open'
+             : isReview ? (getRvJudge(q2.id,idx) !== null ? ' exp-open' : '')
+             : (!!(state[q2.id+'_e']||{})[idx] ? ' exp-open' : '');
   var selM=jv==='mastered'?' sel-m':''; var selC=jv==='confused'?' sel-c':''; var selF=jv==='failed'?' sel-f':'';
   var tagLabel=isOtype?(isAns?'✓ 정답(올바른 것)':'✗ 오답(틀린 것)'):(isAns?'✗ 정답(잘못된 것)':'✓ 오답(올바른 것)');
   var div=document.createElement('div');
@@ -12121,7 +12276,7 @@ function buildOptRow(q2,i){
   var btns=document.createElement('div'); btns.className='opt-judge-btns';
 
   if(isFinal){
-    // 파이널: "완전히 외웠어요" 버튼만 → 원본 state O로 변경 후 카드 갱신
+    // 파이널: "외움" 버튼만 → 원본 state O로 변경 후 행 제거
     var bFinal=document.createElement('button');
     bFinal.className='ojb'; bFinal.style.cssText='font-size:10px;padding:3px 7px;border-color:#22c55e;color:#16a34a;opacity:1;white-space:nowrap;';
     bFinal.textContent='✅ 외움';
@@ -12130,26 +12285,28 @@ function buildOptRow(q2,i){
       refreshOptFinal(qid,ix);
     };})(q2.id,idx);
     btns.appendChild(bFinal);
-  } else {
-    // 복습모드: 임시 O/△/X
-    var bO=document.createElement('button'); bO.className='ojb'+selM; bO.title='이번 차수 완료 (다음 차수엔 다시 나타남)'; bO.textContent='O';
+  } else if(isReview){
+    // 복습모드: 학습모드 UX 동일 (해설 열림, 사라지지 않음) + 임시 state만 저장
+    var bO=document.createElement('button'); bO.className='ojb'+selM; bO.title='완벽히 알겠다 (임시 저장)'; bO.textContent='O';
     bO.onclick=(function(qid,ix){return function(){
-      setRvJudge(qid,ix,'mastered');
-      // O → 즉시 이 행 제거
-      var el=document.getElementById('optrow-'+qid+'-'+ix);
-      if(el) el.remove();
-      checkCardEmpty(qid);
+      setRvJudge(qid,ix,'mastered'); refreshOptRv(qid,ix);
     };})(q2.id,idx); btns.appendChild(bO);
-    var bC=document.createElement('button'); bC.className='ojb'+selC; bC.title='△ 한 번 더 (색깔만 변경)'; bC.textContent='△';
+    var bC=document.createElement('button'); bC.className='ojb'+selC; bC.title='한 번 더 볼게 (임시 저장)'; bC.textContent='△';
     bC.onclick=(function(qid,ix){return function(){
-      setRvJudge(qid,ix,'confused');
-      refreshOptRv(qid,ix);
+      setRvJudge(qid,ix,'confused'); refreshOptRv(qid,ix);
     };})(q2.id,idx); btns.appendChild(bC);
-    var bF=document.createElement('button'); bF.className='ojb'+selF; bF.title='X 모름 (색깔만 변경)'; bF.textContent='X';
+    var bF=document.createElement('button'); bF.className='ojb'+selF; bF.title='모르겠다 (임시 저장)'; bF.textContent='X';
     bF.onclick=(function(qid,ix){return function(){
-      setRvJudge(qid,ix,'failed');
-      refreshOptRv(qid,ix);
+      setRvJudge(qid,ix,'failed'); refreshOptRv(qid,ix);
     };})(q2.id,idx); btns.appendChild(bF);
+  } else {
+    // 학습모드(all/plan): 원본 state에 저장 + 해설 열림
+    var bO2=document.createElement('button'); bO2.className='ojb'+selM; bO2.title='완벽히 알겠다'; bO2.textContent='O';
+    bO2.onclick=(function(qid,ix){return function(){setOptJudge(qid,ix,'mastered');};})(q2.id,idx); btns.appendChild(bO2);
+    var bC2=document.createElement('button'); bC2.className='ojb'+selC; bC2.title='한 번 더 볼게'; bC2.textContent='△';
+    bC2.onclick=(function(qid,ix){return function(){setOptJudge(qid,ix,'confused');};})(q2.id,idx); btns.appendChild(bC2);
+    var bF2=document.createElement('button'); bF2.className='ojb'+selF; bF2.title='모르겠다/틀렸다'; bF2.textContent='X';
+    bF2.onclick=(function(qid,ix){return function(){setOptJudge(qid,ix,'failed');};})(q2.id,idx); btns.appendChild(bF2);
   }
 
   top.appendChild(btns); div.appendChild(top);
@@ -12179,7 +12336,10 @@ function buildBoxItemRow(q2,item){
     if(orig2!=='confused'&&orig2!=='failed') return null;
   }
   var jv=isReview?getRvBoxJudge(q2.id,label):getBoxJudge(q2.id,label);
-  var expOpen=isReview||isFinal?true:getBoxExp(q2.id,label);
+  // 복습: 임시 판정 있을 때만 열림 (state._be 무시)
+  var expOpen = isFinal ? true
+              : isReview ? (getRvBoxJudge(q2.id,label) !== null)
+              : getBoxExp(q2.id,label);
   var jCls=jv?({mastered:'judged-m',confused:'judged-c',failed:'judged-f'}[jv]):'';
   var expCls=expOpen?' exp-open':'';
   var selM=jv==='mastered'?' sel-m':''; var selC=jv==='confused'?' sel-c':''; var selF=jv==='failed'?' sel-f':'';
@@ -12203,23 +12363,26 @@ function buildBoxItemRow(q2,item){
       var el=document.getElementById('boxrow-'+qid+'-'+lb); if(el) el.remove();
       checkCardEmpty(qid);
     };})(q2.id,label); btns.appendChild(bFinal);
-  } else {
-    var bO=document.createElement('button'); bO.className='ojb'+selM; bO.title='이번 차수 완료'; bO.textContent='O';
+  } else if(isReview){
+    var bO=document.createElement('button'); bO.className='ojb'+selM; bO.title='완벽히 알겠다 (임시 저장)'; bO.textContent='O';
     bO.onclick=(function(qid,lb){return function(){
-      setRvBoxJudge(qid,lb,'mastered');
-      var el=document.getElementById('boxrow-'+qid+'-'+lb); if(el) el.remove();
-      checkCardEmpty(qid);
+      setRvBoxJudge(qid,lb,'mastered'); refreshBoxRv(qid,lb);
     };})(q2.id,label); btns.appendChild(bO);
-    var bC=document.createElement('button'); bC.className='ojb'+selC; bC.title='△ 한 번 더'; bC.textContent='△';
+    var bC=document.createElement('button'); bC.className='ojb'+selC; bC.title='한 번 더 볼게 (임시 저장)'; bC.textContent='△';
     bC.onclick=(function(qid,lb){return function(){
-      setRvBoxJudge(qid,lb,'confused');
-      refreshBoxRv(qid,lb);
+      setRvBoxJudge(qid,lb,'confused'); refreshBoxRv(qid,lb);
     };})(q2.id,label); btns.appendChild(bC);
-    var bF=document.createElement('button'); bF.className='ojb'+selF; bF.title='X 모름'; bF.textContent='X';
+    var bF=document.createElement('button'); bF.className='ojb'+selF; bF.title='모르겠다 (임시 저장)'; bF.textContent='X';
     bF.onclick=(function(qid,lb){return function(){
-      setRvBoxJudge(qid,lb,'failed');
-      refreshBoxRv(qid,lb);
+      setRvBoxJudge(qid,lb,'failed'); refreshBoxRv(qid,lb);
     };})(q2.id,label); btns.appendChild(bF);
+  } else {
+    var bO2=document.createElement('button'); bO2.className='ojb'+selM; bO2.title='완벽히 알겠다'; bO2.textContent='O';
+    bO2.onclick=(function(qid,lb){return function(){setBoxJudge(qid,lb,'mastered');};})(q2.id,label); btns.appendChild(bO2);
+    var bC2=document.createElement('button'); bC2.className='ojb'+selC; bC2.title='한 번 더 볼게'; bC2.textContent='△';
+    bC2.onclick=(function(qid,lb){return function(){setBoxJudge(qid,lb,'confused');};})(q2.id,label); btns.appendChild(bC2);
+    var bF2=document.createElement('button'); bF2.className='ojb'+selF; bF2.title='모르겠다/틀렸다'; bF2.textContent='X';
+    bF2.onclick=(function(qid,lb){return function(){setBoxJudge(qid,lb,'failed');};})(q2.id,label); btns.appendChild(bF2);
   }
   top.appendChild(btns); div.appendChild(top);
   var expDiv=document.createElement('div'); expDiv.className='opt-inline-exp';
@@ -12247,7 +12410,10 @@ function buildGnRow(q2,item,expIdx){
     if(orig2!=='confused'&&orig2!=='failed') return null;
   }
   var jv=isReview?getRvGnJudge(q2.id,expIdx):getGnJudge(q2.id,expIdx);
-  var expOpen=isReview||isFinal?true:getGnExp(q2.id,expIdx);
+  // 복습: 임시 판정 있을 때만 열림 (state._be_N 무시)
+  var expOpen = isFinal ? true
+              : isReview ? (getRvGnJudge(q2.id,expIdx) !== null)
+              : getGnExp(q2.id,expIdx);
   var jCls=jv?({mastered:'judged-m',confused:'judged-c',failed:'judged-f'}[jv]):'';
   var expCls=expOpen?' exp-open':'';
   var selM=jv==='mastered'?' sel-m':''; var selC=jv==='confused'?' sel-c':''; var selF=jv==='failed'?' sel-f':'';
@@ -12269,23 +12435,26 @@ function buildGnRow(q2,item,expIdx){
       var el=document.getElementById('gnrow-'+qid+'-'+ix); if(el) el.remove();
       checkCardEmpty(qid);
     };})(q2.id,expIdx); btns.appendChild(bFinal);
-  } else {
-    var bO=document.createElement('button'); bO.className='ojb'+selM; bO.title='이번 차수 완료'; bO.textContent='O';
+  } else if(isReview){
+    var bO=document.createElement('button'); bO.className='ojb'+selM; bO.title='완벽히 알겠다 (임시 저장)'; bO.textContent='O';
     bO.onclick=(function(qid,ix){return function(){
-      setRvGnJudge(qid,ix,'mastered');
-      var el=document.getElementById('gnrow-'+qid+'-'+ix); if(el) el.remove();
-      checkCardEmpty(qid);
+      setRvGnJudge(qid,ix,'mastered'); refreshGnRv(qid,ix);
     };})(q2.id,expIdx); btns.appendChild(bO);
-    var bC=document.createElement('button'); bC.className='ojb'+selC; bC.title='△ 한 번 더'; bC.textContent='△';
+    var bC=document.createElement('button'); bC.className='ojb'+selC; bC.title='한 번 더 볼게 (임시 저장)'; bC.textContent='△';
     bC.onclick=(function(qid,ix){return function(){
-      setRvGnJudge(qid,ix,'confused');
-      refreshGnRv(qid,ix);
+      setRvGnJudge(qid,ix,'confused'); refreshGnRv(qid,ix);
     };})(q2.id,expIdx); btns.appendChild(bC);
-    var bF2=document.createElement('button'); bF2.className='ojb'+selF; bF2.title='X 모름'; bF2.textContent='X';
+    var bF2=document.createElement('button'); bF2.className='ojb'+selF; bF2.title='모르겠다 (임시 저장)'; bF2.textContent='X';
     bF2.onclick=(function(qid,ix){return function(){
-      setRvGnJudge(qid,ix,'failed');
-      refreshGnRv(qid,ix);
+      setRvGnJudge(qid,ix,'failed'); refreshGnRv(qid,ix);
     };})(q2.id,expIdx); btns.appendChild(bF2);
+  } else {
+    var bO2=document.createElement('button'); bO2.className='ojb'+selM; bO2.title='완벽히 알겠다'; bO2.textContent='O';
+    bO2.onclick=(function(qid,ix){return function(){setGnJudge(qid,ix,'mastered');};})(q2.id,expIdx); btns.appendChild(bO2);
+    var bC2=document.createElement('button'); bC2.className='ojb'+selC; bC2.title='한 번 더 볼게'; bC2.textContent='△';
+    bC2.onclick=(function(qid,ix){return function(){setGnJudge(qid,ix,'confused');};})(q2.id,expIdx); btns.appendChild(bC2);
+    var bF3=document.createElement('button'); bF3.className='ojb'+selF; bF3.title='모르겠다/틀렸다'; bF3.textContent='X';
+    bF3.onclick=(function(qid,ix){return function(){setGnJudge(qid,ix,'failed');};})(q2.id,expIdx); btns.appendChild(bF3);
   }
   top.appendChild(btns); div.appendChild(top);
   var expDiv=document.createElement('div'); expDiv.className='opt-inline-exp';
@@ -12299,8 +12468,9 @@ function buildGnRow(q2,item,expIdx){
 // ═══════════════════════════════════════════
 // refresh helpers
 // ═══════════════════════════════════════════
+function _findQ(qId){ return getCurrentData().find(function(x){return x.id===qId;})||getAllQuestions().find(function(x){return x.id===qId;})||null; }
 function refreshOpt(qId,idx){
-  var q=getCurrentData().find(function(x){return x.id===qId;}); if(!q) return;
+  var q=_findQ(qId); if(!q) return;
   var el=document.getElementById('optrow-'+qId+'-'+idx);
   var newRow=buildOptRow(q,idx-1); if(el&&newRow) el.replaceWith(newRow); else if(el&&!newRow) el.remove();
   var banner=document.getElementById('qbanner-'+qId); if(banner) updateAnsBanner(qId,q,banner);
@@ -12311,12 +12481,14 @@ function refreshOptRv(qId,idx){
   var allQ=getAllQuestions(); var q=allQ.find(function(x){return x.id===qId;}); if(!q) return;
   var el=document.getElementById('optrow-'+qId+'-'+idx);
   var newRow=buildOptRow(q,idx-1); if(el&&newRow) el.replaceWith(newRow);
+  updateProg();
 }
 function refreshBoxRv(qId,label){
   var allQ=getAllQuestions(); var q=allQ.find(function(x){return x.id===qId;}); if(!q) return;
   var el=document.getElementById('boxrow-'+qId+'-'+label);
   var parsed=parseBoxStem(q.stem); var item=parsed.items.find(function(it){return it.label===label;});
   if(el&&item) el.replaceWith(buildBoxItemRow(q,item));
+  updateProg();
 }
 function refreshGnRv(qId,idx){
   var allQ=getAllQuestions(); var q=allQ.find(function(x){return x.id===qId;}); if(!q) return;
@@ -12326,10 +12498,11 @@ function refreshGnRv(qId,idx){
   if(isOpts){ label=(q.opts[idx].match(/^([ㄱ-ㅎ])/)||['','?'])[1]; text=q.opts[idx].replace(/^[ㄱ-ㅎ]\.\s*/,''); }
   else{ var t=q.exps[idx].t; label=(t.match(/^([ㄱ-ㅎ])/)||['','?'])[1]; text=t.replace(/^[ㄱ-ㅎ]\.\s*/,''); }
   var newGnRow=buildGnRow(q,{label:label,text:text},idx); if(newGnRow&&el) el.replaceWith(newGnRow);
+  updateProg();
 }
 // 파이널모드 "외움" 후 카드 내 지문이 전부 사라지면 카드 제거
 function checkCardEmpty(qId){
-  var card=document.getElementById('qcard-'+qId); if(!card) return;
+  var card=document.getElementById('q-'+qId); if(!card) return;
   // 카드 안에 opt-row가 하나도 없으면 카드 제거
   var rows=card.querySelectorAll('.opt-row');
   if(rows.length===0){
@@ -12354,7 +12527,7 @@ function refreshOptFinal(qId,idx){
   checkCardEmpty(qId);
 }
 function refreshBoxItem(qId,label){
-  var q=getCurrentData().find(function(x){return x.id===qId;}); if(!q) return;
+  var q=_findQ(qId); if(!q) return;
   var el=document.getElementById('boxrow-'+qId+'-'+label);
   var parsed=parseBoxStem(q.stem); var item=parsed.items.find(function(it){return it.label===label;});
   if(el&&item) el.replaceWith(buildBoxItemRow(q,item));
@@ -12362,7 +12535,7 @@ function refreshBoxItem(qId,label){
   refreshTip(qId,q); updateProg();
 }
 function refreshGnRow(qId,idx){
-  var q=getCurrentData().find(function(x){return x.id===qId;}); if(!q) return;
+  var q=_findQ(qId); if(!q) return;
   var el=document.getElementById('gnrow-'+qId+'-'+idx);
   if(!el) return;
   var isOpts=Q_OPTS_BOX.has(qId);
@@ -12549,7 +12722,7 @@ function renderAll(){
   // 복습모드: 현재 단원 △·X 지문만 (임시 판정)
   var Qs, vis=0;
   if(mode==='final'){
-    Qs = getAllQuestions().filter(function(q){ return needsReview(q.id); });
+    Qs = getPlanQuestions().filter(function(q){ return needsReview(q.id); });
     Qs.forEach(function(q){ vis++; c.appendChild(mkCard(q)); });
     // 상단 카운터 삽입
     var cntBar=document.createElement('div');
@@ -12558,7 +12731,7 @@ function renderAll(){
     c.insertBefore(cntBar, c.firstChild);
     setTimeout(updateFinalCount, 50);
   } else if(mode==='globalReview'){
-    Qs = getAllQuestions().filter(function(q){ return needsReview(q.id); });
+    Qs = getPlanQuestions().filter(function(q){ return needsReview(q.id); });
     Qs.forEach(function(q){ vis++; c.appendChild(mkCard(q)); });
   } else {
     Qs=getCurrentData();
@@ -12593,23 +12766,87 @@ function renderAll(){
 // updateProg
 // ═══════════════════════════════════════════
 function updateProg(){
-  var Qs=getCurrentData(); var total=Qs.length;
-  var bulk=getBulkMastery();
-  var done=Qs.filter(function(q){
-    if(Q_OPTS_BOX.has(q.id)||Q_EXPS_BOX.has(q.id)){
-      var cnt=q.exps.length; if(cnt===0) return false;
-      for(var i=0;i<cnt;i++){if(!getGnExp(q.id,i))return false;} return true;
-    }
-    var parsed=parseBoxStem(q.stem); var boxMode=parsed.items.length>0&&!Q3_TYPE.has(q.id);
-    if(boxMode) return parsed.items.every(function(it){return getBoxExp(q.id,it.label);});
-    return q.opts.every(function(o,i){return !!(state[q.id+'_e']||{})[i+1];});
-  }).length;
-  var effM=function(id){var mv=gq(id).mastery;return mv||(bulk||null);};
-  var m=Qs.filter(function(q){return effM(q.id)==='mastered';}).length;
-  var cf=Qs.filter(function(q){return effM(q.id)==='confused';}).length;
-  var f=Qs.filter(function(q){return effM(q.id)==='failed';}).length;
-  var rev=Qs.filter(function(q){return needsReview(q.id);}).length;
+  // 모드별 집계 대상 결정
+  // ┌─────────────────────────────────────────────────────┐
+  // │ 플랜 있음 + 학습/복습 중  → 오늘 분량(passQs) 기준  │
+  // │ 플랜 없음 or 대시보드    → 현재 단원 or 전체 기준   │
+  // └─────────────────────────────────────────────────────┘
+  var Qs;
+  var tp = (typeof getTodayPlan === 'function') ? getTodayPlan() : null;
+  var hasPlanToday = tp && tp.status === 'active';
 
+  if(mode==='dash'){
+    // 대시보드: 플랜 범위 전체
+    Qs = getPlanQuestions();
+  } else if(mode==='final'){
+    // 파이널체크: 플랜 범위 전체
+    Qs = getPlanQuestions();
+  } else if(mode==='plan'){
+    // plan 모드(대시보드에서 학습 시작): 오늘 분량(passQs)
+    if(hasPlanToday && tp.passQs && tp.passQs.length > 0){
+      Qs = tp.passQs;
+    } else {
+      Qs = planStudyQIds.length > 0
+        ? getAllQuestions().filter(function(q){ return planStudyQIds.indexOf(q.id) >= 0; })
+        : getCurrentData();
+    }
+  } else if(mode==='review'){
+    // 복습모드: 플랜 있으면 오늘 △·X 기준, 없으면 현재 단원 △·X
+    if(hasPlanToday && tp.passQs && tp.passQs.length > 0){
+      Qs = tp.passQs; // 이미 △·X 필터된 오늘 복습 대상
+    } else {
+      Qs = getCurrentData().filter(function(q){ return needsReview(q.id); });
+    }
+  } else if(mode==='globalReview'){
+    // 전범위 복습: 플랜 범위 전체의 △·X
+    Qs = getPlanQuestions().filter(function(q){ return needsReview(q.id); });
+  } else {
+    // 학습모드(all): 플랜 있으면 오늘 분량, 없으면 현재 단원
+    if(hasPlanToday && tp.isFullPass && tp.passQs && tp.passQs.length > 0){
+      Qs = tp.passQs; // 오늘 학습 범위
+    } else {
+      Qs = getCurrentData();
+    }
+  }
+  var total = Qs.length;
+
+  // 완료 문항 수 (모든 지문 판정 완료 기준 - 원본 state 기준)
+  var done = Qs.filter(function(q){ return isQDone(q); }).length;
+
+  // 판정별 집계 (원본 state 기준)
+  var m=0, cf=0, f=0;
+  Qs.forEach(function(q){
+    if(Q_OPTS_BOX.has(q.id)||Q_EXPS_BOX.has(q.id)){
+      // ㄱㄴㄷ형: 지문별 판정
+      q.exps.forEach(function(e,i){
+        var jv = getGnJudge(q.id,i);
+        if(jv==='mastered') m++;
+        else if(jv==='confused') cf++;
+        else if(jv==='failed') f++;
+      });
+    } else {
+      var parsed = parseBoxStem(q.stem);
+      var boxMode = parsed.items.length>0 && !Q3_TYPE.has(q.id);
+      if(boxMode){
+        parsed.items.forEach(function(it){
+          var jv = getBoxJudge(q.id, it.label);
+          if(jv==='mastered') m++;
+          else if(jv==='confused') cf++;
+          else if(jv==='failed') f++;
+        });
+      } else {
+        q.opts.forEach(function(o,i){
+          var jv = getOptJudge(q.id, i+1);
+          if(jv==='mastered') m++;
+          else if(jv==='confused') cf++;
+          else if(jv==='failed') f++;
+        });
+      }
+    }
+  });
+  var rev = Qs.filter(function(q){ return needsReview(q.id); }).length;
+
+  // 상단 칩 업데이트
   var elDone=document.getElementById('sDone'); if(elDone) elDone.textContent=done;
   var elTotal=document.getElementById('sTotal'); if(elTotal) elTotal.textContent=total;
   var elM=document.getElementById('sM'); if(elM) elM.textContent=m;
@@ -12618,14 +12855,36 @@ function updateProg(){
   var elRev=document.getElementById('sRev'); if(elRev) elRev.textContent=rev;
   var elFill=document.getElementById('pFill'); if(elFill) elFill.style.width=(total>0?(done/total*100):0)+'%';
 
+  // 완료 배너 (오늘 분량 or 현재 단원 전체 완료 시)
   var rb=document.getElementById('resultBanner');
-  if(rb&&total>0&&done===total&&m+cf+f===total){
-    var pct=Math.round(m/total*100);
+  if(rb && (mode==='all'||mode==='plan') && total>0 && done===total){
+    var pct = Math.round(m/(m+cf+f||1)*100);
+    var rangeLabel = hasPlanToday ? '오늘 '+tp.passQs.length+'문항' : getCurrentLabel();
     document.getElementById('rEmoji').textContent=pct>=80?'🏆':pct>=60?'👍':'📚';
-    document.getElementById('rScore').textContent=getCurrentLabel()+': 완벽 '+m+'/'+total+' ('+pct+'%)';
-    document.getElementById('rMsg').textContent=pct>=80?'합격권 실력! 복습 모드로 마무리하세요.':'복습 모드로 헷갈리는 문제를 반복 학습하세요.';
+    document.getElementById('rScore').textContent=rangeLabel+' 완료! 완벽 '+m+'지문 ('+pct+'%)';
+    document.getElementById('rMsg').textContent=pct>=80?'합격권 실력! 다음 차수로 넘어가세요.':'복습 모드로 헷갈리는 지문을 반복 학습하세요.';
     rb.classList.add('visible');
   } else if(rb){ rb.classList.remove('visible'); }
+
+  // 대시보드 통계 실시간 갱신 (판정할 때마다 반영)
+  if(mode==='dash'){
+    var planQs = getPlanQuestions();
+    var planTotal = planQs.length;
+    var planDone = planQs.filter(function(q){ return isQDone(q); }).length;
+    var planRev = planQs.filter(function(q){ return needsReview(q.id); }).length;
+    var todayN = parseInt(localStorage.getItem('act_'+todayStr())||'0');
+    var plan2 = loadPlan();
+    var statRow = document.getElementById('dashStatRow');
+    if(statRow){
+      statRow.innerHTML =
+        '<div class="dash-stat"><div class="dash-stat-val">'+planTotal+'</div><div class="dash-stat-lbl">전체 문제</div></div>'+
+        '<div class="dash-stat"><div class="dash-stat-val" style="color:var(--correct)">'+planDone+'</div><div class="dash-stat-lbl">완료 문항</div></div>'+
+        '<div class="dash-stat"><div class="dash-stat-val" style="color:var(--warn)">'+planRev+'</div><div class="dash-stat-lbl">△·X 복습 대상</div></div>'+
+        '<div class="dash-stat"><div class="dash-stat-val" style="color:var(--c2)">'+todayN+'</div><div class="dash-stat-lbl">오늘 완료</div></div>'+
+        '<div class="dash-stat"><div class="dash-stat-val" style="color:var(--c1)">'+calcStreak()+'</div><div class="dash-stat-lbl">연속 학습일</div></div>'+
+        '<div class="dash-stat"><div class="dash-stat-val" style="color:var(--warn)">'+(plan2?'D-'+diffDays(todayStr(),plan2.examDate):'—')+'</div><div class="dash-stat-lbl">시험까지</div></div>';
+    }
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -12809,7 +13068,7 @@ function renderDashboard(){
   // 기능2: 비율 변화 알림 체크
   renderRatioAlert();
 
-  var allQ = getAllQuestions();
+  var allQ = getPlanQuestions();
   var total = allQ.length;
   var plan = loadPlan();
   var tp = getTodayPlan();
@@ -12921,6 +13180,24 @@ function renderDashboard(){
   var calBody = document.getElementById('dashCalBody');
   if(calBody && plan){
     calBody.innerHTML = '';
+    // 단원 선택 모드일 때 범위 배너 표시
+    if(planScopeMode === 'unit' && planScopeIds.length > 0){
+      var scopeBanner = document.createElement('div');
+      scopeBanner.style.cssText = 'background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11.5px;color:#1d4ed8;display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+      var scopeNames = [];
+      MENU.forEach(function(p){
+        p.mids.forEach(function(m){
+          var units = m.hasSub ? m.subs : [m];
+          units.forEach(function(u){
+            if(planScopeIds.indexOf(u.id)>=0) scopeNames.push(u.label);
+          });
+        });
+      });
+      scopeBanner.innerHTML = '<b>📂 선택 범위:</b> '+allQ.length+'문항 — '
+        +(scopeNames.length<=4 ? scopeNames.join(' · ') : scopeNames.slice(0,4).join(' · ')+' 외 '+(scopeNames.length-4)+'개')
+        +'<span style="margin-left:auto;cursor:pointer;color:#2563eb;text-decoration:underline;" onclick="openPlanOverlay()">범위 수정</span>';
+      calBody.appendChild(scopeBanner);
+    }
     var weekdays = ['일','월','화','수','목','금','토'];
     plan.rounds.forEach(function(r, ri){
       var title = document.createElement('div');
@@ -13029,7 +13306,9 @@ function renderDashboard(){
           var doneU=u.data.filter(function(q){return isQDone(q);}).length;
           var pct=Math.round(doneU/u.data.length*100);
           var lvl=pct>=100?'lvl-3':pct>=60?'lvl-2':pct>=20?'lvl-1':'lvl-0';
+          var inScope = planScopeMode==='all' || planScopeIds.indexOf(u.id)>=0;
           var unitDiv=document.createElement('div'); unitDiv.className='dash-unit';
+          if(!inScope) unitDiv.style.opacity='0.35';
           unitDiv.innerHTML='<div class="dash-unit-name" title="'+u.label+'">'+u.label+'</div>'
             +'<div class="dash-unit-bar"><div class="dash-unit-fill '+lvl+'" style="width:'+pct+'%"></div></div>'
             +'<div class="dash-unit-pct">'+doneU+'/'+u.data.length+' ('+pct+'%)</div>';
@@ -13098,7 +13377,7 @@ function jumpToDayRange(sIdx, eIdx, ds){
 // ── 밀림 처리 함수들 ──────────────────────────────────
 function catchUpPlan(){
   // 오늘 범위에 밀린 분량 합산하여 planStudyQIds 확장
-  var allQ = getAllQuestions();
+  var allQ = getPlanQuestions();
   var tp = getTodayPlan();
   if(!tp||tp.status!=='active') return;
   // 밀린 문제: 아직 완료 안 된 것 전체 (오늘 범위 이전 포함)
@@ -13159,6 +13438,42 @@ function getAllQuestions(){
   return all;
 }
 
+// 플랜 범위 상태 (전역)
+var planScopeMode = 'all';       // 'all' | 'unit'
+var planScopeIds  = [];          // 선택된 중단원 id 배열 (unit 모드일 때)
+
+// 플랜 범위 내 문제만 수집
+function getPlanQuestions(){
+  if(planScopeMode === 'all' || planScopeIds.length === 0) return getAllQuestions();
+  var result = [];
+  MENU.forEach(function(p){
+    p.mids.forEach(function(m){
+      if(m.hasSub){
+        m.subs.forEach(function(s){
+          if(planScopeIds.indexOf(s.id) >= 0) result = result.concat(s.data);
+        });
+      } else if(m.data){
+        // 일반 중단원: mid id로 매칭
+        var midId = m.id;
+        if(planScopeIds.indexOf(midId) >= 0) result = result.concat(m.data);
+      }
+    });
+  });
+  return result;
+}
+
+// 플랜 범위 내 중단원 목록 (id 배열)
+function getPlanScopeAllMidIds(){
+  var ids = [];
+  MENU.forEach(function(p){
+    p.mids.forEach(function(m){
+      if(m.hasSub){ m.subs.forEach(function(s){ ids.push(s.id); }); }
+      else { ids.push(m.id); }
+    });
+  });
+  return ids;
+}
+
 // 날짜 유틸
 function dateStr(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
 function parseDate(s){ var p=s.split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
@@ -13200,8 +13515,8 @@ function savePlanData(p){ localStorage.setItem(getPlanKey(), JSON.stringify(p));
 
 // △·X 비율 계산
 function calcWrongRatio(){
-  // 전체 지문 수(total)와 판정된 지문 수(judged), △·X 수(wrong) 집계
-  var allQ=getAllQuestions(), total=0, judged=0, wrong=0;
+  // 플랜 범위 내 지문 수(total)와 판정된 지문 수(judged), △·X 수(wrong) 집계
+  var allQ=getPlanQuestions(), total=0, judged=0, wrong=0;
   allQ.forEach(function(q){
     if(Q_OPTS_BOX.has(q.id)||Q_EXPS_BOX.has(q.id)){
       q.exps.forEach(function(e,i){
@@ -13246,7 +13561,7 @@ function calcWrongRatio(){
   △X 회독: Dn×r (r=현재 △X비율)
 */
 function calcPlan(startDate, examDate, d1Override, goalRounds){
-  var allQ=getAllQuestions(), totalQ=allQ.length, rInfo=calcWrongRatio(), r=rInfo.r;
+  var allQ=getPlanQuestions(), totalQ=allQ.length, rInfo=calcWrongRatio(), r=rInfo.r;
   var goal=goalRounds||9, D1=d1Override||21;
 
   // 세트별 전체 회독 기간
@@ -13345,7 +13660,7 @@ function getTodayPlan(){
     if(dow===0||dow===6) return { status:'weekend', plan:plan };
   }
 
-  var allQ = getAllQuestions();
+  var allQ = getPlanQuestions();
 
   for(var ri=0; ri<plan.rounds.length; ri++){
     var r = plan.rounds[ri];
@@ -13524,20 +13839,19 @@ function renderTodayBanner(){
     +'</div>';
 }
 
-// 오늘 학습 시작: 1/4/7차 → 학습모드, 나머지 → 복습모드
+// 오늘 학습 시작: 1/4/7차 → 학습모드(plan), 나머지 → 복습모드
 function startTodayStudy(){
   var tp = getTodayPlan();
   if(!tp||tp.status!=='active') return;
-  planStudyMode = true;
-  planStudyQIds = tp.passQs.map(function(q){return q.id;});
-  // autoMode: 1차(전체) → 'all'(학습모드), 2/3차(△X) → 'review'(복습모드)
-  var targetMode = tp.isFullPass ? 'plan' : 'review';
   if(!tp.isFullPass){
-    // 복습모드: passQs(△X 필터된 것)를 복습모드로
-    planStudyMode = false; // 복습모드는 judge 기반 필터 사용
+    // 2/3차: 복습모드 (임시 판정, 원본 무영향)
+    planStudyMode = false;
     setMode('review');
-    // 단원 탭은 첫 번째로 (전범위니까 단원 구분 없음)
   } else {
+    // 1차: 플랜 범위 내 오늘 분량만 plan 모드로 표시
+    planStudyMode = true;
+    // tp.passQs는 getPlanQuestions() 기반이므로 그대로 사용
+    planStudyQIds = tp.passQs.map(function(q){return q.id;});
     setMode('plan');
   }
   window.scrollTo({top:200, behavior:'smooth'});
@@ -13565,7 +13879,7 @@ function advancePass(){
     setMode('review');
   } else {
     planStudyMode = true;
-    planStudyQIds = tp2.passQs.map(function(q){return q.id;});
+    planStudyQIds = tp2.passQs.map(function(q){return q.id;}); // getPlanQuestions 기반
     setMode('plan');
   }
   window.scrollTo({top:200, behavior:'smooth'});
@@ -13574,12 +13888,20 @@ function advancePass(){
 // 플랜 오버레이
 // ── 기능1: 남은 일수 → 회독 수 추천 ──────────────────
 function calcMinDaysForGoal(d1, r, goal){
-  // 목표 회독수에 필요한 최소 일수 계산
-  var D1=d1, D4=Math.max(3,Math.round(D1*0.7)), D7=Math.max(3,Math.round(D1*0.5));
+  // calcPlan과 동일한 비율 사용 (D4×0.85, D7×0.70, 3회독=r×0.8)
+  var D1=d1;
+  var D4=Math.max(3,Math.round(D1*0.85));
+  var D7=Math.max(3,Math.round(D1*0.70));
   var allDays=[
-    D1, Math.max(3,Math.round(D1*r)), Math.max(2,Math.round(D1*r*r)),
-    D4, Math.max(3,Math.round(D4*r)), Math.max(2,Math.round(D4*r*r)),
-    D7, Math.max(3,Math.round(D7*r)), Math.max(2,Math.round(D7*r*r))
+    D1,
+    Math.max(3, Math.round(D1*r)),
+    Math.max(2, Math.round(D1*r*0.8)),
+    D4,
+    Math.max(3, Math.round(D4*r)),
+    Math.max(2, Math.round(D4*r*0.8)),
+    D7,
+    Math.max(3, Math.round(D7*r)),
+    Math.max(2, Math.round(D7*r*0.8))
   ];
   return allDays.slice(0,goal).reduce(function(s,d){return s+d;},0);
 }
@@ -13602,6 +13924,147 @@ function selectGoal(n){
   updatePlanPreview();
 }
 
+// ═══════════════════════════════════════════
+// 단원 범위 선택 UI
+// ═══════════════════════════════════════════
+// 플랜 진행 중 범위 변경 경고 체크
+function _warnScopeChange(){
+  var plan = loadPlan();
+  if(!plan) return true; // 플랜 없으면 자유롭게 변경
+  var tp = getTodayPlan();
+  if(!tp || tp.status !== 'active') return true;
+  // 1회독 1차 시작 전이면 경고 불필요
+  if(tp.round === 1 && tp.passNum === 1 && tp.dayInRound === 1) return true;
+  return confirm(
+    '⚠️ 플랜 진행 중 범위 변경\n\n'
+    + '현재 ' + tp.round + '회독 ' + tp.passNum + '차 진행 중입니다.\n'
+    + '범위를 변경하면 오늘 분량 계산이 달라질 수 있습니다.\n\n'
+    + '변경하시겠습니까?\n'
+    + '(플랜 재조정이 필요하면 대시보드에서 "일정 재조정"을 해주세요)'
+  );
+}
+
+function selectScope(mode){
+  if(mode !== planScopeMode && !_warnScopeChange()) return; // 취소
+  planScopeMode = mode;
+  document.getElementById('scopeTabAll').className = 'scope-tab'+(mode==='all'?' act':'');
+  document.getElementById('scopeTabUnit').className = 'scope-tab'+(mode==='unit'?' act':'');
+  document.getElementById('scopeUnitPanel').style.display = mode==='unit'?'block':'none';
+  if(mode==='unit' && planScopeIds.length===0){
+    // 처음 단원선택 시 전체 선택 상태로
+    planScopeIds = getPlanScopeAllMidIds();
+    renderScopeUnitList();
+  }
+  updateScopeCount();
+  updatePlanPreview();
+}
+
+function scopeSelectAll(select){
+  if(!_warnScopeChange()) return;
+  if(select){ planScopeIds = getPlanScopeAllMidIds(); }
+  else { planScopeIds = []; }
+  renderScopeUnitList();
+  updateScopeCount();
+  updatePlanPreview();
+}
+
+function toggleScopeParent(parentId, select){
+  if(!_warnScopeChange()) return;
+  var p = MENU.find(function(x){ return x.id===parentId; }); if(!p) return;
+  p.mids.forEach(function(m){
+    if(m.hasSub){
+      m.subs.forEach(function(s){
+        var idx = planScopeIds.indexOf(s.id);
+        if(select && idx<0) planScopeIds.push(s.id);
+        else if(!select && idx>=0) planScopeIds.splice(idx,1);
+      });
+    } else {
+      var idx = planScopeIds.indexOf(m.id);
+      if(select && idx<0) planScopeIds.push(m.id);
+      else if(!select && idx>=0) planScopeIds.splice(idx,1);
+    }
+  });
+  renderScopeUnitList();
+  updateScopeCount();
+  updatePlanPreview();
+}
+
+function toggleScopeMid(midId){
+  if(!_warnScopeChange()) return;
+  var idx = planScopeIds.indexOf(midId);
+  if(idx>=0) planScopeIds.splice(idx,1);
+  else planScopeIds.push(midId);
+  renderScopeUnitList();
+  updateScopeCount();
+  updatePlanPreview();
+}
+
+function renderScopeUnitList(){
+  var container = document.getElementById('scopeUnitList');
+  if(!container) return;
+  container.innerHTML = '';
+  MENU.forEach(function(p){
+    // 대단원 내 모든 중단원 id 수집
+    var allMidIds = [];
+    p.mids.forEach(function(m){
+      if(m.hasSub){ m.subs.forEach(function(s){ allMidIds.push(s.id); }); }
+      else { allMidIds.push(m.id); }
+    });
+    var checkedCount = allMidIds.filter(function(id){ return planScopeIds.indexOf(id)>=0; }).length;
+    var isAll = checkedCount === allMidIds.length;
+    var isNone = checkedCount === 0;
+    var isPartial = !isAll && !isNone;
+
+    var box = document.createElement('div'); box.className='scope-unit-box';
+
+    // 대단원 헤더
+    var header = document.createElement('div'); header.className='scope-parent';
+    // 체크박스 (indeterminate 처리)
+    var cb = document.createElement('input'); cb.type='checkbox'; cb.checked=isAll; cb.indeterminate=isPartial;
+    cb.style.cssText='cursor:pointer;accent-color:var(--c0);width:14px;height:14px;';
+    cb.onchange=(function(pid){ return function(){ toggleScopeParent(pid, this.checked); }; })(p.id);
+    header.appendChild(cb);
+    var lbl = document.createElement('span'); lbl.className='scope-parent-label';
+    lbl.textContent = p.label + ' (' + checkedCount + '/' + allMidIds.length + ')';
+    header.appendChild(lbl);
+    var bAll = document.createElement('button'); bAll.className='scope-parent-btn'; bAll.textContent='전체';
+    bAll.onclick=(function(pid){ return function(){ toggleScopeParent(pid,true); }; })(p.id);
+    var bNone = document.createElement('button'); bNone.className='scope-parent-btn'; bNone.textContent='해제';
+    bNone.onclick=(function(pid){ return function(){ toggleScopeParent(pid,false); }; })(p.id);
+    header.appendChild(bAll); header.appendChild(bNone);
+    box.appendChild(header);
+
+    // 중단원 목록
+    var midsDiv = document.createElement('div'); midsDiv.className='scope-mids';
+    p.mids.forEach(function(m){
+      var units = m.hasSub ? m.subs : [m];
+      units.forEach(function(u){
+        var qCount = (u.data||[]).length;
+        var checked = planScopeIds.indexOf(u.id) >= 0;
+        var item = document.createElement('label'); item.className='scope-mid-item';
+        var uCb = document.createElement('input'); uCb.type='checkbox'; uCb.checked=checked;
+        uCb.onchange=(function(uid){ return function(){ toggleScopeMid(uid); }; })(u.id);
+        item.appendChild(uCb);
+        var txt = document.createTextNode(u.label + ' (' + qCount + ')');
+        item.appendChild(txt);
+        midsDiv.appendChild(item);
+      });
+    });
+    box.appendChild(midsDiv);
+    container.appendChild(box);
+  });
+}
+
+function updateScopeCount(){
+  var el = document.getElementById('scopeCountLabel'); if(!el) return;
+  var cnt = getPlanQuestions().length;
+  el.textContent = '선택된 문항: ' + cnt + '문항';
+  el.style.color = cnt===0 ? 'var(--wrong)' : 'var(--c0)';
+  // D1 힌트 텍스트도 업데이트
+  var hint = document.getElementById('planD1Hint');
+  if(hint) hint.textContent = '일 (' + cnt + '문항 기준, 권장 ' + Math.max(7, Math.ceil(cnt/27)) + '일)';
+}
+
 function openPlanOverlay(){
   var plan = loadPlan();
   var today = todayStr();
@@ -13611,12 +14074,22 @@ function openPlanOverlay(){
     document.getElementById('planExamDate').value  = plan.examDate;
     document.getElementById('planStartDate').value = plan.startDate;
     document.getElementById('planD1').value        = plan.d1||21;
-    planIncludeWeekend = plan.includeWeekend !== false; // 저장된 값 복원
+    planIncludeWeekend = plan.includeWeekend !== false;
+    // 저장된 범위 복원
+    planScopeMode = plan.scopeMode || 'all';
+    planScopeIds  = plan.scopeIds  || [];
   } else {
     document.getElementById('planStartDate').value = today;
     document.getElementById('planD1').value        = 21;
     planIncludeWeekend = true;
+    planScopeMode = 'all';
+    planScopeIds  = [];
   }
+  // 범위 탭 UI 복원
+  document.getElementById('scopeTabAll').className  = 'scope-tab'+(planScopeMode==='all'?' act':'');
+  document.getElementById('scopeTabUnit').className = 'scope-tab'+(planScopeMode==='unit'?' act':'');
+  document.getElementById('scopeUnitPanel').style.display = planScopeMode==='unit'?'block':'none';
+  if(planScopeMode==='unit'){ renderScopeUnitList(); updateScopeCount(); }
   selectGoal(goal);
   selectWeekend(planIncludeWeekend);
   updatePlanPreview();
@@ -13746,8 +14219,10 @@ function savePlan(){
   if(examDate<=startDate){ alert('시험일이 시작일보다 늦어야 합니다.'); return; }
   if(d1Val<3||d1Val>90){ alert('1회독 기간은 3~90일 사이로 입력하세요.'); return; }
   var plan = calcPlan(startDate, examDate, d1Val, goal);
-  // 저장 시점의 △·X 비율도 함께 저장 (기능2용)
+  // 저장 시점의 △·X 비율 + 범위 저장
   plan.savedWrongRatio = plan.wrongRatio;
+  plan.scopeMode = planScopeMode;
+  plan.scopeIds  = planScopeIds.slice();
   savePlanData(plan);
   closePlanOverlay();
   renderTodayBanner();
@@ -13815,8 +14290,29 @@ function dismissRatioAlert(){
 // setMode에 plan 모드 추가
 var _origSetMode = setMode;
 
+// iOS Safari 주소창 높이 변동 대응 - 실제 뷰포트 높이를 CSS 변수로 주입
+(function setAppHeight(){
+  function update(){
+    document.documentElement.style.setProperty('--app-height', window.innerHeight+'px');
+  }
+  update();
+  window.addEventListener('resize', update);
+  window.addEventListener('orientationchange', function(){ setTimeout(update, 200); });
+})();
+
 loadState();
 migrateReviewFlags();
+cleanOldRvKeys();   // 3일 이상 된 임시 판정 키 자동 정리
+// 저장된 플랜에서 범위 설정 즉시 복원 (Firebase 로드 전에도 동작)
+(function restorePlanScope(){
+  try{
+    var saved = JSON.parse(localStorage.getItem(PLAN_KEY)||'null');
+    if(saved && saved.scopeMode){
+      planScopeMode = saved.scopeMode;
+      planScopeIds  = saved.scopeIds || [];
+    }
+  }catch(e){}
+})();
 initTimerBarState();
 renderTabs();
 renderAll();
@@ -13968,7 +14464,7 @@ function getPassQuestions(todayQs, roundIdx, passNum, today){
 // ⑥ 진도 미달 처리 옵션 강화
 // ════════════════════════════════════════
 function catchUpPlan(){
-  var allQ = getAllQuestions();
+  var allQ = getPlanQuestions();
   var tp = getTodayPlan();
   if(!tp||tp.status!=='active') return;
   var notDone = allQ.slice(0, tp.endIdx).filter(function(q){ return !isQDone(q); });
@@ -14013,60 +14509,154 @@ function catchUpPlan(){
 function renderHelpPanel(){
   var el = document.getElementById('helpPanel');
   if(!el) return;
-  el.innerHTML = `
-  <div style="max-width:920px;margin:0 auto;padding:16px 14px 60px;">
-    <div class="dash-section">
-      <div class="dash-title">📖 행정법 기출문제집 OX풀이 사용 설명서</div>
-      <div style="font-size:13px;color:var(--dim);line-height:1.9;">
+  el.innerHTML = '<div style="max-width:920px;margin:0 auto;padding:16px 14px 60px;">'
+  + '<div class="dash-section">'
+  + '<div class="dash-title">📖 행정법 기출문제집 OX풀이 사용 설명서</div>'
+  + '<div style="font-size:13px;color:var(--dim);line-height:1.9;">'
 
-        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">🎯 기본 개념</p>
-        <p>각 지문마다 <b>O / △ / X</b> 버튼으로 판정합니다.</p>
-        <table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0 14px;">
-          <tr style="background:var(--surface2);"><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">버튼</th><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">의미</th><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">다음 차수</th></tr>
-          <tr><td style="padding:6px 10px;border:1px solid var(--border);">✅ O</td><td style="padding:6px 10px;border:1px solid var(--border);">완벽히 알겠다</td><td style="padding:6px 10px;border:1px solid var(--border);">제외</td></tr>
-          <tr style="background:var(--surface2);"><td style="padding:6px 10px;border:1px solid var(--border);">🔁 △</td><td style="padding:6px 10px;border:1px solid var(--border);">한 번 더 볼게</td><td style="padding:6px 10px;border:1px solid var(--border);">포함</td></tr>
-          <tr><td style="padding:6px 10px;border:1px solid var(--border);">❌ X</td><td style="padding:6px 10px;border:1px solid var(--border);">모르겠다/틀렸다</td><td style="padding:6px 10px;border:1px solid var(--border);">포함</td></tr>
-        </table>
+  // ① 판정 버튼
+  + '<p style="font-weight:800;color:var(--text);font-size:14px;margin:16px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--border);">① 판정 버튼 (O / △ / X)</p>'
+  + '<p style="margin-bottom:8px;">각 지문마다 판정 버튼을 눌러 학습 상태를 기록합니다. 판정 후 해당 지문의 해설이 펼쳐집니다.</p>'
+  + '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:0 0 6px;">'
+  + '<tr style="background:var(--surface2);"><th style="padding:7px 10px;text-align:left;border:1px solid var(--border);">버튼</th><th style="padding:7px 10px;text-align:left;border:1px solid var(--border);">의미</th><th style="padding:7px 10px;text-align:left;border:1px solid var(--border);">복습 대상</th></tr>'
+  + '<tr><td style="padding:7px 10px;border:1px solid var(--border);">✅ O</td><td style="padding:7px 10px;border:1px solid var(--border);">완벽히 알겠다</td><td style="padding:7px 10px;border:1px solid var(--border);">제외</td></tr>'
+  + '<tr style="background:var(--surface2);"><td style="padding:7px 10px;border:1px solid var(--border);">🔁 △</td><td style="padding:7px 10px;border:1px solid var(--border);">한 번 더 볼게</td><td style="padding:7px 10px;border:1px solid var(--border);">포함</td></tr>'
+  + '<tr><td style="padding:7px 10px;border:1px solid var(--border);">❌ X</td><td style="padding:7px 10px;border:1px solid var(--border);">모르겠다 / 틀렸다</td><td style="padding:7px 10px;border:1px solid var(--border);">포함</td></tr>'
+  + '</table>'
+  + '<p style="font-size:11.5px;color:var(--muted);margin-bottom:4px;">💡 △와 X로 표시한 지문이 복습모드와 파이널체크의 대상이 됩니다.</p>'
 
-        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">🔄 회독 구조</p>
-        <table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0 14px;">
-          <tr style="background:var(--surface2);"><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">회독</th><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">1차</th><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">2·3차</th><th style="padding:6px 10px;text-align:left;border:1px solid var(--border);">특이사항</th></tr>
-          <tr><td style="padding:6px 10px;border:1px solid var(--border);">1회독</td><td style="padding:6px 10px;border:1px solid var(--border);">전체 569문항 📖</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">-</td></tr>
-          <tr style="background:var(--surface2);"><td style="padding:6px 10px;border:1px solid var(--border);">2~3회독</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">-</td></tr>
-          <tr><td style="padding:6px 10px;border:1px solid var(--border);">4회독</td><td style="padding:6px 10px;border:1px solid var(--border);">전체 569문항 📖</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">🔄 초기화 후 시작</td></tr>
-          <tr style="background:var(--surface2);"><td style="padding:6px 10px;border:1px solid var(--border);">5~6회독</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">-</td></tr>
-          <tr><td style="padding:6px 10px;border:1px solid var(--border);">7회독</td><td style="padding:6px 10px;border:1px solid var(--border);">전체 569문항 📖</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">🔄 초기화 후 시작</td></tr>
-          <tr style="background:var(--surface2);"><td style="padding:6px 10px;border:1px solid var(--border);">8~9회독</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">△·X 지문만 🔁</td><td style="padding:6px 10px;border:1px solid var(--border);">최종 마무리</td></tr>
-        </table>
+  // ② 상단 진도 표시
+  + '<p style="font-weight:800;color:var(--text);font-size:14px;margin:20px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--border);">② 상단 진도 표시 (실시간)</p>'
+  + '<p style="margin-bottom:6px;">화면 상단의 칩(진도/완벽/헷갈림/모름)은 <b>현재 모드와 플랜 상태에 따라 자동으로 기준이 바뀝니다.</b></p>'
+  + '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:0 0 8px;">'
+  + '<tr style="background:var(--surface2);"><th style="padding:7px 10px;text-align:left;border:1px solid var(--border);">상황</th><th style="padding:7px 10px;text-align:left;border:1px solid var(--border);">진도 칩 기준</th></tr>'
+  + '<tr><td style="padding:7px 10px;border:1px solid var(--border);">플랜 있고 1차 (학습모드)</td><td style="padding:7px 10px;border:1px solid var(--border);"><b>오늘 분량 문항 수</b> (예: 12/28)</td></tr>'
+  + '<tr style="background:var(--surface2);"><td style="padding:7px 10px;border:1px solid var(--border);">플랜 있고 2·3차 (복습모드)</td><td style="padding:7px 10px;border:1px solid var(--border);"><b>오늘 △·X 문항 수</b> (예: 5/14)</td></tr>'
+  + '<tr><td style="padding:7px 10px;border:1px solid var(--border);">플랜 없고 학습모드</td><td style="padding:7px 10px;border:1px solid var(--border);">현재 선택 단원 전체</td></tr>'
+  + '<tr style="background:var(--surface2);"><td style="padding:7px 10px;border:1px solid var(--border);">파이널체크</td><td style="padding:7px 10px;border:1px solid var(--border);">플랜 범위 전체</td></tr>'
+  + '<tr><td style="padding:7px 10px;border:1px solid var(--border);">대시보드</td><td style="padding:7px 10px;border:1px solid var(--border);">플랜 범위 전체 (실시간 갱신)</td></tr>'
+  + '</table>'
+  + '<p style="font-size:11.5px;color:var(--muted);margin-bottom:4px;">💡 오늘 분량을 모두 완료하면 완료 배너가 표시됩니다.</p>'
 
-        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">📋 메뉴 설명</p>
-        <ul style="padding-left:18px;margin:0 0 14px;">
-          <li><b>📊 대시보드</b> — 오늘 플랜 현황, 진도 분석, 회독 캘린더</li>
-          <li><b>📖 학습모드</b> — 단원별 전체 문제 학습 (1·4·7회독 1차)</li>
-          <li><b>🔁 복습모드</b> — 현재 단원의 △·X 지문만</li>
-          <li><b>🎯 파이널체크</b> — 마지막까지 남은 △·X 지문을 해설과 함께 암기. ✅ 외움으로 하나씩 제거</li>
-        </ul>
+  // ③ 4가지 모드
+  + '<p style="font-weight:800;color:var(--text);font-size:14px;margin:20px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--border);">③ 4가지 학습 모드</p>'
 
-        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">☁️ 동기화</p>
-        <ul style="padding-left:18px;margin:0 0 14px;">
-          <li>구글 로그인 시 모든 기기에서 자동 동기화</li>
-          <li>JSON 내보내기로 백업, 불러오기로 복원 가능</li>
-          <li>로그인 없이 시작 시 이 기기에만 저장됨</li>
-        </ul>
+  + '<p style="font-weight:700;color:var(--c0);margin:10px 0 3px;">📖 학습모드</p>'
+  + '<ul style="padding-left:18px;margin:0 0 8px;">'
+  + '<li>단원별 <b>전체 지문</b>을 처음부터 학습합니다 (1·4·7회독 1차에 해당)</li>'
+  + '<li>판정 버튼(O/△/X)을 누르면 해설이 펼쳐지고 <b>원본 데이터에 저장</b>됩니다</li>'
+  + '<li>모든 지문을 판정하면 해당 문제의 풀이 팁이 표시됩니다</li>'
+  + '<li>플랜이 있으면 상단 칩이 <b>오늘 분량 기준</b>으로 표시됩니다</li>'
+  + '</ul>'
 
-        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">⏱ 타이머</p>
-        <p>상단 ⏱ 버튼으로 접기/펼치기. 오늘 학습량과 연속 학습일 자동 기록.</p>
+  + '<p style="font-weight:700;color:var(--c2);margin:10px 0 3px;">🔁 복습모드</p>'
+  + '<ul style="padding-left:18px;margin:0 0 8px;">'
+  + '<li>학습모드에서 △·X로 판정된 <b>복습 대상 지문만</b> 보여줍니다</li>'
+  + '<li>지문은 <b>닫힌 상태</b>로 시작 — 판정 버튼을 눌러야 해설이 열립니다</li>'
+  + '<li>복습모드의 O/△/X 판정은 <b>임시 저장</b>으로, 원본 데이터에 영향을 주지 않습니다</li>'
+  + '<li>다음 차수(예: 2차→3차)가 되면 임시 판정이 리셋되어 <b>지문이 다시 닫힌 상태</b>로 나타납니다</li>'
+  + '<li>플랜이 있으면 상단 칩이 <b>오늘 △·X 문항 기준</b>으로 표시됩니다</li>'
+  + '<li><b>🗑 복습 초기화</b> 버튼을 누르면 임시 판정만 삭제 — 원본 데이터(△·X 지문 목록) 보존</li>'
+  + '</ul>'
 
-        <p style="font-weight:700;color:var(--text);margin:12px 0 4px;">📅 회독 플랜</p>
-        <ul style="padding-left:18px;margin:0;">
-          <li>시험일 입력 → 가능한 회독 수 자동 추천</li>
-          <li>△·X 비율이 변하면 자동 재조정 알림</li>
-          <li>주말 포함/제외 선택 가능</li>
-          <li>진도 밀리면 몰아치기/재조정/하루분량 늘리기 선택</li>
-        </ul>
-      </div>
-    </div>
-  </div>`;
+  + '<p style="font-weight:700;color:var(--correct);margin:10px 0 3px;">🎯 파이널체크</p>'
+  + '<ul style="padding-left:18px;margin:0 0 8px;">'
+  + '<li>전체 단원에서 현재 △·X로 남아있는 <b>모든 지문</b>을 한 번에 모아서 보여줍니다</li>'
+  + '<li>해설이 <b>처음부터 펼쳐진 상태</b>로 표시 — 읽고 암기하는 용도</li>'
+  + '<li><b>✅ 외움</b> 버튼을 누르면 그 지문이 O로 변경되고 목록에서 사라집니다 (원본 데이터 변경)</li>'
+  + '<li>안 누르면 계속 남아있어 반복해서 읽을 수 있습니다</li>'
+  + '<li>상단 카운터로 <b>남은 지문 수를 실시간</b> 확인할 수 있습니다</li>'
+  + '<li>시험 직전 최종 암기 점검용으로 사용하세요</li>'
+  + '</ul>'
+
+  + '<p style="font-weight:700;color:var(--c1);margin:10px 0 3px;">📊 대시보드</p>'
+  + '<ul style="padding-left:18px;margin:0 0 8px;">'
+  + '<li>오늘의 회독 플랜 현황 및 진행률 확인</li>'
+  + '<li>계획 대비 실제 진도 비교 그래프</li>'
+  + '<li>회독 캘린더 (날짜 클릭 시 해당 범위 학습 가능)</li>'
+  + '<li>최근 14일 학습 기록 차트 및 단원별 완료율</li>'
+  + '<li>진도 미달 시 몰아치기 / 일정 재조정 / 하루 분량 늘리기 옵션</li>'
+  + '<li>단원 선택 범위 설정 시 범위 밖 단원은 흐리게 표시</li>'
+  + '</ul>'
+
+  // ④ 9회독 구조
+  + '<p style="font-weight:800;color:var(--text);font-size:14px;margin:20px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--border);">④ 9회독 구조</p>'
+  + '<p style="margin-bottom:8px;">3개 세트로 나뉘며, 각 세트는 <b>1차(전체 학습)</b> + <b>2·3차(복습)</b>로 구성됩니다.<br>4회독과 7회독 시작 시 판정 데이터가 초기화되고 전체를 다시 학습합니다.</p>'
+  + '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:0 0 8px;">'
+  + '<tr style="background:var(--surface2);"><th style="padding:7px 10px;text-align:left;border:1px solid var(--border);">세트</th><th style="padding:7px 10px;text-align:left;border:1px solid var(--border);">회독</th><th style="padding:7px 10px;text-align:left;border:1px solid var(--border);">모드</th><th style="padding:7px 10px;text-align:left;border:1px solid var(--border);">비고</th></tr>'
+  + '<tr><td style="padding:7px 10px;border:1px solid var(--border);" rowspan="3">세트1</td><td style="padding:7px 10px;border:1px solid var(--border);">1회독</td><td style="padding:7px 10px;border:1px solid var(--border);">📖 학습모드 (전체)</td><td style="padding:7px 10px;border:1px solid var(--border);">-</td></tr>'
+  + '<tr style="background:var(--surface2);"><td style="padding:7px 10px;border:1px solid var(--border);">2회독</td><td style="padding:7px 10px;border:1px solid var(--border);">🔁 복습모드 (△·X)</td><td style="padding:7px 10px;border:1px solid var(--border);">-</td></tr>'
+  + '<tr><td style="padding:7px 10px;border:1px solid var(--border);">3회독</td><td style="padding:7px 10px;border:1px solid var(--border);">🔁 복습모드 (△·X)</td><td style="padding:7px 10px;border:1px solid var(--border);">-</td></tr>'
+  + '<tr style="background:var(--surface2);"><td style="padding:7px 10px;border:1px solid var(--border);" rowspan="3">세트2</td><td style="padding:7px 10px;border:1px solid var(--border);">4회독</td><td style="padding:7px 10px;border:1px solid var(--border);">📖 학습모드 (전체)</td><td style="padding:7px 10px;border:1px solid var(--border);">🔄 자동 초기화</td></tr>'
+  + '<tr><td style="padding:7px 10px;border:1px solid var(--border);">5회독</td><td style="padding:7px 10px;border:1px solid var(--border);">🔁 복습모드 (△·X)</td><td style="padding:7px 10px;border:1px solid var(--border);">-</td></tr>'
+  + '<tr style="background:var(--surface2);"><td style="padding:7px 10px;border:1px solid var(--border);">6회독</td><td style="padding:7px 10px;border:1px solid var(--border);">🔁 복습모드 (△·X)</td><td style="padding:7px 10px;border:1px solid var(--border);">-</td></tr>'
+  + '<tr><td style="padding:7px 10px;border:1px solid var(--border);" rowspan="3">세트3</td><td style="padding:7px 10px;border:1px solid var(--border);">7회독</td><td style="padding:7px 10px;border:1px solid var(--border);">📖 학습모드 (전체)</td><td style="padding:7px 10px;border:1px solid var(--border);">🔄 자동 초기화</td></tr>'
+  + '<tr style="background:var(--surface2);"><td style="padding:7px 10px;border:1px solid var(--border);">8회독</td><td style="padding:7px 10px;border:1px solid var(--border);">🔁 복습모드 (△·X)</td><td style="padding:7px 10px;border:1px solid var(--border);">-</td></tr>'
+  + '<tr><td style="padding:7px 10px;border:1px solid var(--border);">9회독</td><td style="padding:7px 10px;border:1px solid var(--border);">🔁 복습모드 (△·X)</td><td style="padding:7px 10px;border:1px solid var(--border);">최종 마무리</td></tr>'
+  + '</table>'
+
+  // ⑤ 회독 플랜 설정
+  + '<p style="font-weight:800;color:var(--text);font-size:14px;margin:20px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--border);">⑤ 회독 플랜 설정</p>'
+  + '<ul style="padding-left:18px;margin:0 0 8px;">'
+  + '<li>시험일과 시작일을 입력하면 <b>9회독 전체 일정을 자동 계산</b>합니다</li>'
+  + '<li>남은 기간에 따라 3회독 / 6회독 / 9회독 중 달성 가능한 목표를 추천합니다</li>'
+  + '<li><b>주말 포함/제외</b> 선택 가능 (평일만 학습할 경우)</li>'
+  + '<li>1회독 목표 기간을 직접 설정할 수 있습니다 (기본 21일 권장)</li>'
+  + '<li>회독 일수 기준: 1회독 D1, 4회독 D1×0.85, 7회독 D1×0.70 (반복으로 속도 증가)</li>'
+  + '<li>2·3회독은 1회독에서 체크된 △·X 지문 수가 고정이므로 동일한 양을 봅니다</li>'
+  + '<li>△·X 비율이 ±20% 이상 변하면 일정 재조정 알림이 표시됩니다</li>'
+  + '<li>플랜 설정 탭의 <b>🗑 전체 초기화</b> 버튼으로 플랜만 삭제 (학습 데이터 보존)</li>'
+  + '<li>로그인한 사용자마다 <b>독립적인 플랜</b>을 가집니다</li>'
+  + '</ul>'
+
+  // ⑥ 단원 선택 범위
+  + '<p style="font-weight:800;color:var(--text);font-size:14px;margin:20px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--border);">⑥ 단원 선택 범위</p>'
+  + '<ul style="padding-left:18px;margin:0 0 8px;">'
+  + '<li>플랜 설정에서 <b>🌐 전범위</b> 또는 <b>📂 단원 선택</b>으로 학습 범위를 지정할 수 있습니다</li>'
+  + '<li>단원 선택 시 대단원 전체 선택/해제 버튼과 중단원 체크박스로 세부 조정 가능</li>'
+  + '<li>선택된 문항 수와 권장 1회독 기간이 실시간으로 표시됩니다</li>'
+  + '<li>선택 범위는 플랜 일수 계산, 대시보드 진도, 파이널체크 등 모든 곳에 반영됩니다</li>'
+  + '<li>플랜 진행 중 범위를 변경하면 경고 팝업이 표시됩니다</li>'
+  + '<li>대시보드 캘린더 상단에 현재 선택 범위가 표시됩니다</li>'
+  + '</ul>'
+
+  // ⑦ 동기화 및 계정
+  + '<p style="font-weight:800;color:var(--text);font-size:14px;margin:20px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--border);">⑦ 동기화 및 계정</p>'
+  + '<ul style="padding-left:18px;margin:0 0 8px;">'
+  + '<li><b>구글 로그인</b> 시 모든 기기에서 자동 동기화 (변경 후 0.5초)</li>'
+  + '<li>로그인한 계정마다 학습 데이터와 회독 플랜이 독립적으로 저장됩니다</li>'
+  + '<li>오프라인에서 학습 후 접속 시 로컬과 클라우드 중 <b>더 많이 진행된 데이터</b>를 선택할 수 있습니다</li>'
+  + '<li>로그인 없이 시작 시 이 기기 로컬에만 저장됩니다</li>'
+  + '<li><b>📂 JSON 파일 올리기</b>로 다른 기기의 데이터를 가져올 수 있습니다</li>'
+  + '<li>카카오톡·네이버 앱 내 브라우저에서는 Google 로그인이 제한됩니다 — 안내 화면에서 주소를 복사해 Chrome/Safari로 열어주세요</li>'
+  + '<li>삼성 인터넷 브라우저에서도 구글 로그인이 지원됩니다</li>'
+  + '</ul>'
+
+  // ⑧ 기타 기능
+  + '<p style="font-weight:800;color:var(--text);font-size:14px;margin:20px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--border);">⑧ 기타 기능</p>'
+  + '<ul style="padding-left:18px;margin:0 0 16px;">'
+  + '<li><b>⏱ 타이머</b> — 학습 시간 측정. 상단 ⏱ 버튼으로 접기/펼치기. 오늘 완료 문항 수와 연속 학습일 자동 기록</li>'
+  + '<li><b>🔍 검색</b> — 지문, 선택지, 해설 전체를 키워드로 검색</li>'
+  + '<li><b>전체 초기화</b> — 모든 O/△/X 판정 데이터를 완전히 삭제 (학습 처음부터 다시 시작)</li>'
+  + '<li><b>🗑 복습 초기화</b> — 복습모드의 임시 판정만 삭제. 원본 데이터(△·X 지문 목록)는 유지됩니다</li>'
+  + '<li><b>뒤로가기 버튼</b> — 앱이 닫히지 않도록 방지됩니다</li>'
+  + '</ul>'
+
+  // 권장 학습 순서
+  + '<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 14px;margin-top:4px;">'
+  + '<p style="font-weight:700;color:#166534;margin-bottom:6px;">💡 권장 학습 순서</p>'
+  + '<ol style="padding-left:18px;margin:0;font-size:12.5px;color:var(--dim);line-height:2.2;">'
+  + '<li>📅 대시보드에서 <b>회독 플랜 설정</b> (시험일 + 학습 범위 입력)</li>'
+  + '<li>📖 <b>학습모드</b>에서 오늘 분량 지문 읽고 O/△/X 판정 → 해설 확인</li>'
+  + '<li>🔁 <b>복습모드</b>에서 △·X 지문을 닫힌 상태로 다시 풀기 (임시 판정, 원본 보존)</li>'
+  + '<li>🔁 다음 차수에 복습모드 재진입 → 임시 판정 리셋, 처음부터 다시 풀기</li>'
+  + '<li>🎯 시험 직전 <b>파이널체크</b>에서 남은 △·X 지문 해설 읽고 ✅ 외움으로 하나씩 제거</li>'
+  + '</ol>'
+  + '</div>'
+
+  + '</div>'
+  + '</div>'
+  + '</div>';
 }
 
 // 설명서 탭 버튼 추가 (setMode 연동)
