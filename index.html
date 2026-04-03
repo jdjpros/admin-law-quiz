@@ -672,7 +672,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
     <div class="top-title">행정법 <span>기출문제집 OX풀이</span></div>
     <div class="top-btns">
       <button class="tbtn" id="btnDash" onclick="setMode('dash')">📊 대시보드</button>
-      <button class="tbtn act" id="btnAll" onclick="setMode('all')">📖 학습모드</button>
+      <button class="tbtn act" id="btnAll" onclick="onClickStudyMode()">📖 학습모드</button>
       <button class="tbtn" id="btnReview" onclick="setMode('review')">🔁 복습모드</button>
       <button class="tbtn" id="btnGlobalReview" onclick="setMode('final')" title="마지막까지 남은 △·X 지문 - 해설 보며 암기">🎯 파이널체크</button>
       <button class="tbtn" id="btnHelp" onclick="setMode('help')">📖 설명서</button>
@@ -11587,14 +11587,15 @@ function signOut(){
 function loadCloudState(uid){
   var status = document.getElementById('syncStatus');
   if(status){ status.className = 'sync-status syncing'; status.textContent = '↻'; }
-  fbDb.ref('users/' + uid + '/state').once('value')
+  // state + plan 동시에 가져오기
+  fbDb.ref('users/' + uid).once('value')
     .then(function(snap){
-      var cloudData = snap.val();
+      var cloudRoot = snap.val() || {};
+      var cloudData = cloudRoot.state || null;
+      var cloudPlan = cloudRoot.plan || null;
       var localData = state;
-      var localCount = Object.keys(localData).length;
 
       if(cloudData){
-        // 클라우드 vs 로컬 충돌 해결: 판정 키 수가 더 많은 쪽 선택
         var cloudCount = Object.keys(cloudData).filter(function(k){
           return k.indexOf('_j')>0 || k.indexOf('_bj')>0 || k.indexOf('_bj_')>0;
         }).length;
@@ -11603,8 +11604,6 @@ function loadCloudState(uid){
         }).length;
 
         if(localCount2 > cloudCount){
-          // 로컬이 더 많은 경우 (오프라인에서 학습했을 때)
-          var info = document.getElementById('syncInfo');
           if(confirm(
             '📶 오프라인 학습 데이터 감지\n\n'
             + '로컬 기기: ' + localCount2 + '개 판정\n'
@@ -11613,19 +11612,20 @@ function loadCloudState(uid){
             + '로컬 데이터를 클라우드에 업로드할까요?\n'
             + '(취소 시 클라우드 데이터로 덮어씁니다)'
           )){
-            // 로컬 → 클라우드 업로드
             pushToCloud(uid, true);
           } else {
-            // 클라우드 → 로컬 덮어쓰기
             state = cloudData;
             saveState();
+            // 클라우드 플랜 복원
+            if(cloudPlan){ localStorage.setItem(getPlanKey(), JSON.stringify(cloudPlan)); }
           }
         } else {
-          // 클라우드가 같거나 더 많음 → 클라우드 우선
           state = cloudData;
           saveState();
+          // 클라우드 플랜 복원 (로컬보다 우선)
+          if(cloudPlan){ localStorage.setItem(getPlanKey(), JSON.stringify(cloudPlan)); }
         }
-        // 플랜의 범위 설정도 복원
+        // 범위 설정 복원
         var savedPlan = loadPlan();
         if(savedPlan && savedPlan.scopeMode){
           planScopeMode = savedPlan.scopeMode;
@@ -11636,14 +11636,12 @@ function loadCloudState(uid){
         if(status){ status.className = 'sync-status'; status.textContent = '●'; }
         startAutoSync(uid);
       } else {
-        // 클라우드에 데이터 없음 → 로컬 데이터를 클라우드에 업로드
         if(Object.keys(localData).length > 0){
-          pushToCloud(uid, false); // 로컬 데이터 있으면 즉시 업로드
+          pushToCloud(uid, false);
         }
         if(status){ status.className = 'sync-status'; status.textContent = '●'; }
         startAutoSync(uid);
       }
-      // 로그인 후 이 계정의 플랜이 없으면 설정 유도
       setTimeout(function(){
         if(!loadPlan()){
           setTimeout(function(){ openPlanOverlay(); }, 1500);
@@ -11678,7 +11676,11 @@ function pushToCloud(uid, showMsg){
   if(!firebaseReady || !fbDb || !uid) return;
   var status = document.getElementById('syncStatus');
   if(status){ status.className = 'sync-status syncing'; status.textContent = '↻'; }
-  fbDb.ref('users/' + uid + '/state').set(state)
+  // 학습 판정 state + 플랜 데이터 함께 저장
+  var planData = loadPlan();
+  var payload = { state: state };
+  if(planData) payload.plan = planData;
+  fbDb.ref('users/' + uid).update(payload)
     .then(function(){
       if(status){ status.className = 'sync-status'; status.textContent = '●'; }
       if(showMsg){
@@ -12007,6 +12009,21 @@ function resetReview(){
     if(k.indexOf(rvPrefix)===0) localStorage.removeItem(k);
   });
   renderAll(); updateProg();
+}
+
+// 학습모드 탭 클릭 - 복습 차수 중이면 경고
+function onClickStudyMode(){
+  var tp = (typeof getTodayPlan==='function') ? getTodayPlan() : null;
+  if(tp && tp.status==='active' && !tp.isFullPass){
+    if(!confirm(
+      '⚠️ 현재 '+tp.round+'회독 '+tp.passNum+'차 (복습 차수)입니다.\n\n'
+      +'학습모드로 이동하면 오늘 범위 전체 지문이 표시되며\n'
+      +'O/△/X 판정이 원본 데이터에 저장됩니다.\n\n'
+      +'복습 진행 중에는 🔁 복습모드를 권장합니다.\n\n'
+      +'그래도 학습모드로 이동할까요?'
+    )) return;
+  }
+  setMode('all');
 }
 
 // ═══════════════════════════════════════════
@@ -12854,14 +12871,29 @@ function updateProg(){
     // 전범위 복습: 플랜 범위 전체의 △·X
     Qs = getPlanQuestions().filter(function(q){ return needsReview(q.id); });
   } else {
-    // 학습모드(all): 플랜 있으면 오늘 분량, 없으면 현재 단원
-    if(hasPlanToday && tp.isFullPass && tp.passQs && tp.passQs.length > 0){
-      Qs = tp.passQs; // 오늘 학습 범위
+    // 학습모드(all): 플랜 활성이면 오늘 차수 대상 기준, 없으면 현재 단원
+    if(hasPlanToday && tp.todayQs && tp.todayQs.length > 0){
+      Qs = tp.todayQs; // 1차든 2/3차든 오늘 범위 기준
     } else {
       Qs = getCurrentData();
     }
   }
   var total = Qs.length;
+
+  // ── 지문 단위 진도 집계 (문제 완료 수 → 판정된 지문 수) ──
+  var totalStmts = 0, doneStmts = 0;
+  Qs.forEach(function(q){
+    if(Q_OPTS_BOX.has(q.id)||Q_EXPS_BOX.has(q.id)){
+      q.exps.forEach(function(e,i){ totalStmts++; if(getGnJudge(q.id,i)) doneStmts++; });
+    } else {
+      var parsed2=parseBoxStem(q.stem);
+      if(parsed2.items.length>0&&!Q3_TYPE.has(q.id)){
+        parsed2.items.forEach(function(it){ totalStmts++; if(getBoxJudge(q.id,it.label)) doneStmts++; });
+      } else {
+        q.opts.forEach(function(o,i){ totalStmts++; if(getOptJudge(q.id,i+1)) doneStmts++; });
+      }
+    }
+  });
 
   // 완료 문항 수 (모든 지문 판정 완료 기준 - 원본 state 기준)
   var done = Qs.filter(function(q){ return isQDone(q); }).length;
@@ -12899,23 +12931,49 @@ function updateProg(){
   });
   var rev = Qs.filter(function(q){ return needsReview(q.id); }).length;
 
-  // 상단 칩 업데이트
-  var elDone=document.getElementById('sDone'); if(elDone) elDone.textContent=done;
-  var elTotal=document.getElementById('sTotal'); if(elTotal) elTotal.textContent=total;
+  // 상단 칩 업데이트 (진도: 지문 단위, 나머지: 기존)
+  var elDone=document.getElementById('sDone'); if(elDone) elDone.textContent=doneStmts;
+  var elTotal=document.getElementById('sTotal'); if(elTotal) elTotal.textContent=totalStmts;
   var elM=document.getElementById('sM'); if(elM) elM.textContent=m;
   var elC=document.getElementById('sC'); if(elC) elC.textContent=cf;
   var elF=document.getElementById('sF'); if(elF) elF.textContent=f;
   var elRev=document.getElementById('sRev'); if(elRev) elRev.textContent=rev;
-  var elFill=document.getElementById('pFill'); if(elFill) elFill.style.width=(total>0?(done/total*100):0)+'%';
+  var elFill=document.getElementById('pFill'); if(elFill) elFill.style.width=(totalStmts>0?(doneStmts/totalStmts*100):0)+'%';
 
   // 완료 배너 (오늘 분량 or 현재 단원 전체 완료 시)
   var rb=document.getElementById('resultBanner');
-  if(rb && (mode==='all'||mode==='plan') && total>0 && done===total){
-    var pct = Math.round(m/(m+cf+f||1)*100);
-    var rangeLabel = hasPlanToday ? '오늘 '+tp.passQs.length+'문항' : getCurrentLabel();
-    document.getElementById('rEmoji').textContent=pct>=80?'🏆':pct>=60?'👍':'📚';
-    document.getElementById('rScore').textContent=rangeLabel+' 완료! 완벽 '+m+'지문 ('+pct+'%)';
-    document.getElementById('rMsg').textContent=pct>=80?'합격권 실력! 다음 차수로 넘어가세요.':'복습 모드로 헷갈리는 지문을 반복 학습하세요.';
+  if(rb && (mode==='all'||mode==='plan'||mode==='review') && total>0 && done===total){
+    var pct2 = Math.round(m/(m+cf+f||1)*100);
+    var rangeLabel = hasPlanToday ? '오늘 '+tp.todayQs.length+'문항' : getCurrentLabel();
+    document.getElementById('rEmoji').textContent=pct2>=80?'🏆':pct2>=60?'👍':'📚';
+    document.getElementById('rScore').textContent=rangeLabel+' 완료! 완벽 '+m+'지문 ('+pct2+'%)';
+
+    if(hasPlanToday && (mode==='plan'||mode==='review')){
+      // 차수별 자동 완료 팝업 (1회만 표시)
+      var popKey = 'pass_done_pop_'+todayStr()+'_r'+(tp.round-1)+'_p'+tp.passNum;
+      if(!localStorage.getItem(popKey)){
+        localStorage.setItem(popKey,'1');
+        _showPassCompletePopup(tp);
+      }
+      var nextPassLabel = tp.passNum<3 ? (tp.passNum+1)+'차로 이동 →' : '대시보드로 →';
+      document.getElementById('rMsg').innerHTML =
+        '<button onclick="'+(tp.passNum<3?'advancePass()':'setMode(\'dash\')')+'" '
+        +'style="margin-top:8px;padding:8px 18px;background:'+(tp.passNum<3?'var(--c2)':'var(--correct)')+';color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">'
+        +nextPassLabel+'</button>';
+    } else if(!hasPlanToday){
+      // 플랜 없이 단원 완료 → 다음 단원 버튼
+      var nextU = getNextUnit();
+      if(nextU){
+        document.getElementById('rMsg').innerHTML =
+          '<button onclick="_goNextUnit()" '
+          +'style="margin-top:8px;padding:8px 18px;background:var(--c0);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">'
+          +'→ '+nextU.label+'</button>';
+      } else {
+        document.getElementById('rMsg').textContent = pct2>=80?'합격권 실력! 복습모드로 점검하세요.':'복습 모드로 반복 학습하세요.';
+      }
+    } else {
+      document.getElementById('rMsg').textContent = '대시보드에서 다음 차수로 이동하세요.';
+    }
     rb.classList.add('visible');
   } else if(rb){ rb.classList.remove('visible'); }
 
@@ -13146,6 +13204,7 @@ function renderDashboard(){
     } else if(tp && tp.status==='active'){
       var done0=getTodayPassDone(tp.passQs), total0=tp.passQs.length;
       var pct0=total0>0?Math.round(done0/total0*100):100;
+      var pulledToday = getPulled(todayStr(), tp.round-1);
       var passLabel=['1차 전체 지문 → 📖 학습모드','2차 △·X 지문만 → 🔁 복습모드','3차 △·X 지문만 → 🔁 복습모드'][tp.passNum-1];
       var modeTag = tp.isFullPass
         ? '<span style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:6px;">📖 학습모드</span>'
@@ -13162,13 +13221,16 @@ function renderDashboard(){
         +'</div>'
         + progressNote
         +'<div style="font-size:12px;color:var(--dim);margin-bottom:6px;font-weight:600;">'+passLabel+modeTag+'</div>'
-        +'<div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;">오늘 범위: '+(tp.startIdx+1)+'~'+tp.endIdx+'번째 ('+tp.todayQs.length+'문제) &nbsp;·&nbsp; 현재 차수 대상: '+total0+'문항</div>'
+        +'<div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;">오늘 범위: '+(tp.startIdx+1)+'~'+tp.endIdx+'번째 ('+tp.todayQs.length+'문제)'
+        +(pulledToday>0?' &nbsp;<span style="background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;">📥 +'+pulledToday+'문항 당김</span>':'')
+        +' &nbsp;·&nbsp; 현재 차수 대상: '+total0+'문항</div>'
         +'<div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden;margin-bottom:5px;"><div style="height:100%;width:'+pct0+'%;background:linear-gradient(90deg,#34d399,#60a5fa);border-radius:5px;transition:width .5s;"></div></div>'
         +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:12px;"><span>'+done0+'/'+total0+' 완료 ('+pct0+'%)</span><span>D-'+tp.daysLeft+'일 남음</span></div>'
         +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
         +'<button onclick="startTodayStudy()" style="padding:8px 18px;background:#fbbf24;color:#1e2540;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">'+(tp.isFullPass?'📖 학습 시작':'🔁 복습 시작')+'</button>'
         +(tp.passNum<3?'<button onclick="advancePass()" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--dim);font-family:Pretendard,sans-serif;">다음 차수 →</button>':'')
         +(tp.passNum>1?'<button onclick="retreatPass()" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--dim);font-family:Pretendard,sans-serif;">← 이전 차수</button>':'')
+        +(pct0>=100?'<button onclick="pullNextDay()" style="padding:8px 14px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:Pretendard,sans-serif;">📥 다음날 당기기</button>':'')
         +'<button onclick="openPlanOverlay()" style="padding:8px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--muted);font-family:Pretendard,sans-serif;">⚙ 플랜 수정</button>'
         +'</div>';
     } else {
@@ -13206,6 +13268,16 @@ function renderDashboard(){
         +'<button class="delay-btn catch" onclick="catchUpPlan()">🔥 오늘 몰아치기</button>'
         +'<button class="delay-btn replan" onclick="replanFromToday()">📅 일정 재조정</button>'
         +'<button class="delay-btn ignore" onclick="ignorDelay()">일단 무시</button>'
+        +'</div></div>';
+    } else if(diff > 0) {
+      // 앞서가는 경우: 다음날 미리 당기기 + 플랜 앞당기기
+      var aheadDays = tp&&tp.status==='active'&&tp.qPerDay>0 ? Math.round(diff/tp.qPerDay) : 0;
+      delayHtml = '<div class="delay-alert ok" style="margin-top:12px;">'
+        +'<div class="delay-alert-title">'+statusMsg+'</div>'
+        +'<div class="delay-alert-desc">진도가 앞서있어요. 계속 당길까요?</div>'
+        +'<div class="delay-actions">'
+        +'<button class="delay-btn catch" onclick="pullNextDay()" style="background:#059669;">📥 다음날 진도 미리 당기기</button>'
+        +(aheadDays>=2?'<button class="delay-btn replan" onclick="replanFaster()">⚡ 플랜 앞당기기 (약 '+aheadDays+'일)</button>':'')
         +'</div></div>';
     } else {
       delayHtml = '<div class="delay-alert ok" style="margin-top:12px;"><div class="delay-alert-title">'+statusMsg+'</div></div>';
@@ -13454,8 +13526,205 @@ function replanFromToday(){
   alert('✅ 일정이 재조정됐습니다!\n\n새 △·X 비율 '+Math.round((newPlan.wrongRatio||0)*100)+'% 반영됨');
 }
 
+// ── 다음날 진도 미리 당기기 ──────────────────────────────
+function pullNextDay(){
+  var tp = getTodayPlan();
+  if(!tp||tp.status!=='active') return;
+  var allQ = getPlanQuestions();
+  var ri = tp.round - 1;
+  var r  = tp.plan.rounds[ri];
+
+  // 내일 기준 남은 문항 계산
+  var pulledBefore  = getCumulativePulled(r.startDate, todayStr(), ri);
+  var pulledToday   = getPulled(todayStr(), ri);
+  var targetQs;
+  if(tp.isFullRound){
+    targetQs = allQ.filter(function(q){ return !isQDone(q); });
+    if(targetQs.length===0) targetQs = allQ;
+  } else {
+    targetQs = allQ.filter(function(q){ return hasWrongOrConfused(q); });
+    if(targetQs.length===0) targetQs = allQ;
+  }
+
+  // 내일 이후 남은 문항
+  var nextStart = Math.min(tp.endIdx, targetQs.length);
+  var remaining = targetQs.slice(nextStart);
+
+  if(remaining.length === 0){
+    if(confirm('🎉 이 회독의 모든 문항을 완료했어요!\n\n플랜을 앞당겨 재설정할까요?')){
+      replanFaster();
+    }
+    return;
+  }
+
+  // 프리셋 팝업 표시
+  _showPullDialog(remaining, tp, ri);
+}
+
+function _showPullDialog(remaining, tp, ri){
+  // 기존 팝업 제거
+  var old = document.getElementById('pullDialog');
+  if(old) old.remove();
+
+  var qPerDay = tp.qPerDay;
+  var maxQ    = remaining.length;
+  var presets = [];
+  if(maxQ >= 5)  presets.push(Math.min(5,  maxQ));
+  if(maxQ >= 10) presets.push(Math.min(10, maxQ));
+  if(maxQ >= 20) presets.push(Math.min(20, maxQ));
+  if(maxQ > 0 && presets.indexOf(maxQ)<0) presets.push(maxQ); // 전부
+
+  var presetBtns = presets.map(function(n){
+    return '<button onclick="_doPull('+n+')" style="padding:8px 14px;background:var(--c0);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">'+n+'문항</button>';
+  }).join('');
+
+  var overlay = document.createElement('div');
+  overlay.id = 'pullDialog';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.innerHTML =
+    '<div style="background:#fff;border-radius:14px;padding:24px 20px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.2);">'
+    +'<div style="font-size:16px;font-weight:800;margin-bottom:6px;">📥 다음날 진도 당기기</div>'
+    +'<div style="font-size:12.5px;color:var(--dim);margin-bottom:16px;line-height:1.6;">'
+    +'남은 문항: <b>'+maxQ+'문항</b><br>'
+    +'당긴 문항은 오늘 1차 학습으로 시작됩니다.<br>'
+    +'내일은 나머지 문항만 남습니다.</div>'
+    +'<div style="font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:8px;">빠른 선택</div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">'+presetBtns+'</div>'
+    +'<div style="font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:6px;">직접 입력</div>'
+    +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">'
+    +'<input id="pullCustomN" type="number" min="1" max="'+maxQ+'" value="'+Math.min(qPerDay,maxQ)+'" style="width:80px;border:1.5px solid var(--border);border-radius:7px;padding:6px 10px;font-size:14px;font-family:Pretendard,sans-serif;">'
+    +'<span style="font-size:12px;color:var(--muted);">문항 (최대 '+maxQ+')</span>'
+    +'<button onclick="_doPullCustom()" style="padding:7px 14px;background:var(--c3);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">시작</button>'
+    +'</div>'
+    +'<button onclick="document.getElementById(\'pullDialog\').remove()" style="width:100%;padding:9px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--dim);font-family:Pretendard,sans-serif;">취소</button>'
+    +'</div>';
+  document.body.appendChild(overlay);
+}
+
+function _doPullCustom(){
+  var n = parseInt(document.getElementById('pullCustomN').value||'0');
+  if(n>0) _doPull(n);
+}
+
+function _doPull(n){
+  var old = document.getElementById('pullDialog');
+  if(old) old.remove();
+
+  var tp = getTodayPlan();
+  if(!tp||tp.status!=='active') return;
+  var allQ = getPlanQuestions();
+  var ri = tp.round - 1;
+
+  var targetQs;
+  if(tp.isFullRound){
+    targetQs = allQ.filter(function(q){ return !isQDone(q); });
+    if(targetQs.length===0) targetQs = allQ;
+  } else {
+    targetQs = allQ.filter(function(q){ return hasWrongOrConfused(q); });
+    if(targetQs.length===0) targetQs = allQ;
+  }
+
+  var nextStart = Math.min(tp.endIdx, targetQs.length);
+  var pullQs    = targetQs.slice(nextStart, nextStart + n);
+  if(pullQs.length===0){ alert('당길 문항이 없어요.'); return; }
+
+  // pulled 저장 (A-1: 잔여 보존 → 오늘 날짜에 당긴 수 기록)
+  var already = getPulled(todayStr(), ri);
+  setPulled(todayStr(), ri, already + pullQs.length);
+
+  // 차수 리셋 O: 1차부터 다시
+  setTodayPassNum(todayStr(), ri, 1);
+
+  // 당긴 범위는 항상 1차(학습) → plan 모드 고정 (isFullRound 무관)
+  planStudyMode = true;
+  planStudyQIds = pullQs.map(function(q){ return q.id; });
+  setMode('plan');
+
+  renderTodayBanner();
+  renderDashboard();
+  window.scrollTo({top:200, behavior:'smooth'});
+}
+
+// ── 빠른 진도 반영 플랜 앞당기기 ────────────────────────
+// 실제 진도가 계획보다 앞선 경우 시작일을 앞당겨 일정 재계산
+function replanFaster(){
+  var plan = loadPlan();
+  if(!plan) return;
+  var allQ = getPlanQuestions();
+  var actualDone = allQ.filter(function(q){ return isQDone(q); }).length;
+  var expectedDone = calcExpectedDone(plan, todayStr(), allQ);
+  var diff = actualDone - expectedDone;
+  if(diff <= 0){ alert('현재 계획보다 앞서있지 않아요.'); return; }
+
+  var tp = getTodayPlan();
+  var qPerDay = (tp&&tp.qPerDay>0) ? tp.qPerDay : Math.ceil(allQ.length/(plan.d1||21));
+  var aheadDays = Math.round(diff / qPerDay);
+
+  if(!confirm(
+    '⚡ 플랜 앞당기기\n\n'
+    +'현재 계획보다 약 '+aheadDays+'일 앞서있어요.\n'
+    +'오늘부터 일정을 앞당겨 재계산합니다.\n\n'
+    +'시험일: '+plan.examDate+'\n'
+    +'진행 기록은 유지됩니다. 재조정할까요?'
+  )) return;
+
+  // 앞당긴 시작일 계산: 실제 진도만큼 앞선 날짜를 새 "오늘"로 설정
+  // 단순히 오늘 기준으로 재계산 (calcPlan이 실제 완료 문항 반영)
+  var newPlan = calcPlan(todayStr(), plan.examDate, plan.d1||21, plan.goalRounds||9);
+  newPlan.aheadReplan = true;
+  savePlanData(newPlan);
+  renderDashboard();
+  renderTodayBanner();
+  alert('✅ 플랜이 앞당겨졌습니다!\n\n약 '+aheadDays+'일 앞선 진도 반영 완료\n남은 일정이 최적화됐어요 🚀');
+}
+
 function ignorDelay(){
   renderDashboard(); // 그냥 닫기 (아무것도 안 함)
+}
+
+// ── 차수 완료 팝업 ──────────────────────────────────────
+function _showPassCompletePopup(tp){
+  var old = document.getElementById('passCompletePopup');
+  if(old) old.remove();
+
+  var isLast = (tp.passNum >= 3);
+  var title   = isLast ? '🎉 오늘 3차까지 모두 완료!' : tp.passNum+'차 완료!';
+  var subMsg  = isLast
+    ? '오늘 학습을 모두 마쳤습니다.\n대시보드로 돌아가거나 다음날 진도를 당길 수 있어요.'
+    : (tp.passNum+1)+'차 복습모드로 이동할까요?\n(△·X 지문만 다시 풀기)';
+  var btnLabel = isLast ? '📊 대시보드로' : '🔁 '+(tp.passNum+1)+'차 시작';
+  var btnAction = isLast ? 'setMode(\'dash\')' : 'advancePass()';
+  var btn2 = isLast
+    ? '<button onclick="pullNextDay();document.getElementById(\'passCompletePopup\').remove();" style="padding:10px 16px;background:var(--c3);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">📥 다음날 당기기</button>'
+    : '<button onclick="document.getElementById(\'passCompletePopup\').remove();" style="padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;color:var(--dim);font-family:Pretendard,sans-serif;">계속 보기</button>';
+
+  var overlay = document.createElement('div');
+  overlay.id = 'passCompletePopup';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.innerHTML =
+    '<div style="background:#fff;border-radius:14px;padding:26px 22px;width:100%;max-width:340px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2);">'
+    +'<div style="font-size:32px;margin-bottom:8px;">'+(isLast?'🏆':'✅')+'</div>'
+    +'<div style="font-size:17px;font-weight:800;margin-bottom:8px;">'+title+'</div>'
+    +'<div style="font-size:12.5px;color:var(--dim);margin-bottom:20px;line-height:1.7;white-space:pre-line;">'+subMsg+'</div>'
+    +'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">'
+    +'<button onclick="'+btnAction+';document.getElementById(\'passCompletePopup\').remove();" style="padding:10px 18px;background:#fbbf24;color:#1e2540;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">'+btnLabel+'</button>'
+    +btn2
+    +'</div></div>';
+  document.body.appendChild(overlay);
+}
+
+// ── 다음 단원으로 이동 ──────────────────────────────────
+function _goNextUnit(){
+  var next = getNextUnit();
+  if(!next) return;
+  curParent = next.parent;
+  curMid    = next.mid;
+  curSubId  = next.sub;
+  masteryFilter = null;
+  clearSearch();
+  renderTabs();
+  renderAll();
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function jumpToQuestion(qId){
@@ -13565,7 +13834,13 @@ function getPlanKey(){
 var planGoalRounds = 9; // UI 상태
 
 function loadPlan(){ try{ return JSON.parse(localStorage.getItem(getPlanKey())||'null'); }catch(e){ return null; } }
-function savePlanData(p){ localStorage.setItem(getPlanKey(), JSON.stringify(p)); }
+function savePlanData(p){
+  localStorage.setItem(getPlanKey(), JSON.stringify(p));
+  // 로그인 상태면 Firebase에도 즉시 반영
+  if(currentUser && currentUser.uid && firebaseReady && fbDb){
+    fbDb.ref('users/' + currentUser.uid + '/plan').set(p).catch(function(){});
+  }
+}
 
 // △·X 비율 계산
 function calcWrongRatio(){
@@ -13739,8 +14014,13 @@ function getTodayPlan(){
     }
 
     var qPerDay = Math.max(1, Math.ceil(targetQs.length / r.days));
-    var startIdx = dayInRound * qPerDay;
-    var endIdx   = Math.min(startIdx + qPerDay, targetQs.length);
+
+    // 누적 당긴 문항 수 반영
+    var pulledBefore = getCumulativePulled(r.startDate, today, ri);
+    var pulledToday  = getPulled(today, ri);
+
+    var startIdx = Math.min(dayInRound * qPerDay + pulledBefore, targetQs.length);
+    var endIdx   = Math.min(startIdx + qPerDay + pulledToday, targetQs.length);
     var todayQs  = targetQs.slice(startIdx, endIdx);
 
     // 초기화 필요 회독(4회독, 7회독) 첫날 자동 초기화 체크
@@ -13794,6 +14074,15 @@ function getTodayPassNum(today, roundIdx){
 function setTodayPassNum(today, roundIdx, n){
   var k = 'pass_day_'+today+'_r'+roundIdx;
   localStorage.setItem(k, n);
+}
+
+// ── 당기기(pulled) 헬퍼 ───────────────────────────────
+function getPulledKey(dateStr, roundIdx){ return 'pulled_'+dateStr+'_r'+roundIdx; }
+function getPulled(dateStr, roundIdx){
+  return parseInt(localStorage.getItem(getPulledKey(dateStr, roundIdx))||'0');
+}
+function setPulled(dateStr, roundIdx, n){
+  localStorage.setItem(getPulledKey(dateStr, roundIdx), n);
 }
 
 // 해당 차수의 문제 목록
@@ -13855,7 +14144,7 @@ function getTodayPassDone(passQs){
   }).length;
 }
 
-// ── 오늘 배너 렌더 ──────────────────────────
+// ── 오늘 배너 렌더 (진도 표시 전용 - 액션 버튼 없음) ──
 function renderTodayBanner(){
   var el = document.getElementById('todayPlanBanner');
   if(!el) return;
@@ -13863,43 +14152,60 @@ function renderTodayBanner(){
   if(!tp){ el.innerHTML=''; return; }
 
   if(tp.status==='notStarted'){
-    el.innerHTML='<div class="today-plan-banner"><div class="tpb-round">📅 플랜 예정</div><div class="tpb-main">시작일: <span>'+tp.plan.startDate+'</span></div><div class="tpb-sub">아직 시작 전입니다. D-'+diffDays(todayStr(),tp.plan.startDate)+'</div><div class="tpb-actions"><button class="tpb-btn settings" onclick="openPlanOverlay()">⚙ 플랜 수정</button></div></div>';
+    el.innerHTML='<div class="today-plan-banner"><div class="tpb-round">📅 플랜 예정</div>'
+      +'<div class="tpb-main">시작일: <span>'+tp.plan.startDate+'</span></div>'
+      +'<div class="tpb-sub">아직 시작 전입니다. D-'+diffDays(todayStr(),tp.plan.startDate)+'</div>'
+      +'<div class="tpb-sub" style="margin-top:4px;font-size:11px;opacity:.7;">대시보드에서 플랜을 수정할 수 있어요.</div>'
+      +'</div>';
     return;
   }
   if(tp.status==='weekend'){
-    el.innerHTML='<div class="today-plan-banner" style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8)"><div class="tpb-round">🏖 주말</div><div class="tpb-main">오늘은 <span>쉬는 날</span>이에요!</div><div class="tpb-sub">주말 제외 플랜 적용 중 · 내일 학습이 이어집니다.</div><div class="tpb-actions"><button class="tpb-btn settings" onclick="openPlanOverlay()">⚙ 플랜 수정</button></div></div>';
+    el.innerHTML='<div class="today-plan-banner" style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8)">'
+      +'<div class="tpb-round">🏖 주말</div>'
+      +'<div class="tpb-main">오늘은 <span>쉬는 날</span>이에요!</div>'
+      +'<div class="tpb-sub">주말 제외 플랜 적용 중 · 내일 학습이 이어집니다.</div>'
+      +'</div>';
     return;
   }
   if(tp.status==='done'){
-    el.innerHTML='<div class="today-plan-banner" style="background:linear-gradient(135deg,#064e3b,#065f46)"><div class="tpb-round">🏆 플랜 완료</div><div class="tpb-main">시험 준비 완료!</div><div class="tpb-sub">수고하셨습니다.</div></div>';
+    el.innerHTML='<div class="today-plan-banner" style="background:linear-gradient(135deg,#064e3b,#065f46)">'
+      +'<div class="tpb-round">🏆 플랜 완료</div>'
+      +'<div class="tpb-main">시험 준비 완료!</div>'
+      +'<div class="tpb-sub">수고하셨습니다.</div>'
+      +'</div>';
     return;
   }
 
   var done = getTodayPassDone(tp.passQs);
   var total = tp.passQs.length;
   var pct = total>0 ? Math.round(done/total*100) : 0;
-  var passLabel = ['1차 (전체 지문)','2차 (X+△ 지문)','3차 (X+△ 지문)'][tp.passNum-1];
+  var passLabel = ['1차 (전체 지문)','2차 (△·X 지문)','3차 (△·X 지문)'][tp.passNum-1];
   var roundLabel = tp.round+'회독 '+tp.globalPass+'차';
   var passClass = ['p1','p2','p3'][tp.passNum-1];
+  var modeIcon = tp.isFullPass ? '📖' : '🔁';
 
-  // 2차이상인데 passQs 없으면
+  // 2차이상인데 오늘 복습 대상 없으면 완료 표시
   if(tp.passNum>1 && total===0){
-    el.innerHTML='<div class="today-plan-banner" style="background:linear-gradient(135deg,#064e3b,#065f46)"><div class="tpb-round">✅ '+roundLabel+'</div><div class="tpb-main">오늘 <span>'+passLabel+'</span> 완료!</div><div class="tpb-sub">틀리거나 헷갈린 지문이 없어요 🎉</div><div class="tpb-actions"><button class="tpb-btn start" onclick="advancePass()">다음 차수로 →</button><button class="tpb-btn" onclick="retreatPass()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.75);border-radius:8px;padding:7px 13px;cursor:pointer;font-size:12px;font-weight:600;font-family:Pretendard,sans-serif;">← 이전 차수</button><button class="tpb-btn settings" onclick="openPlanOverlay()">⚙ 플랜 수정</button></div></div>';
+    el.innerHTML='<div class="today-plan-banner" style="background:linear-gradient(135deg,#064e3b,#065f46)">'
+      +'<div class="tpb-round">✅ '+roundLabel+'</div>'
+      +'<div class="tpb-main">오늘 <span>'+passLabel+'</span> 완료!</div>'
+      +'<div class="tpb-sub">틀리거나 헷갈린 지문이 없어요 🎉 &nbsp;·&nbsp; 대시보드에서 다음 차수로 이동하세요.</div>'
+      +'</div>';
     return;
   }
 
+  // 완료 여부
+  var isDone = (pct >= 100);
+  var statusBar = isDone
+    ? '<div class="tpb-pct" style="color:#6ee7b7;font-weight:700;"><span>✅ '+done+'/'+total+' 완료!</span><span>대시보드에서 다음 차수로 이동하세요 →</span></div>'
+    : '<div class="tpb-pct"><span>'+done+'/'+total+' 완료 ('+pct+'%)</span><span>D-'+tp.daysLeft+'일 남음</span></div>';
+
   el.innerHTML='<div class="today-plan-banner">'
-    +'<div class="tpb-round">'+tp.round+'회독 Day '+tp.dayInRound+'/'+tp.roundDays+' &nbsp;·&nbsp; D-'+tp.daysLeft+'</div>'
+    +'<div class="tpb-round">'+modeIcon+' '+tp.round+'회독 Day '+tp.dayInRound+'/'+tp.roundDays+' &nbsp;·&nbsp; D-'+tp.daysLeft+'</div>'
     +'<div class="tpb-main"><span class="pass-badge '+passClass+'">'+roundLabel+'</span> '+passLabel+'</div>'
-    +'<div class="tpb-sub">오늘 범위: 전체 Q'+(tp.startIdx+1)+'~Q'+tp.endIdx+' ('+tp.todayQs.length+'문제) &nbsp;·&nbsp; 현재 차수: '+total+'문항</div>'
-    +'<div class="tpb-progress"><div class="tpb-fill" id="tpbFill" style="width:'+pct+'%"></div></div>'
-    +'<div class="tpb-pct"><span>'+done+'/'+total+' 완료 ('+pct+'%)</span><span>남은 '+tp.daysLeft+'일</span></div>'
-    +'<div class="tpb-actions">'
-    +'<button class="tpb-btn start" onclick="startTodayStudy()">📖 오늘 학습 시작</button>'
-    +(tp.passNum<3?'<button class="tpb-btn next-pass" onclick="advancePass()">다음 차수 →</button>':'')
-    +(tp.passNum>1?'<button class="tpb-btn" onclick="retreatPass()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.75);border-radius:8px;padding:7px 13px;cursor:pointer;font-size:12px;font-weight:600;font-family:Pretendard,sans-serif;">← 이전 차수</button>':'')
-    +'<button class="tpb-btn settings" onclick="openPlanOverlay()">⚙ 플랜 수정</button>'
-    +'</div>'
+    +'<div class="tpb-sub">오늘 범위: Q'+(tp.startIdx+1)+'~Q'+tp.endIdx+' ('+tp.todayQs.length+'문제) &nbsp;·&nbsp; 현재 차수: '+total+'문항</div>'
+    +'<div class="tpb-progress"><div class="tpb-fill" style="width:'+pct+'%"'+(isDone?' style="background:linear-gradient(90deg,#34d399,#059669)"':'')+'></div></div>'
+    + statusBar
     +'</div>';
 }
 
@@ -13930,7 +14236,21 @@ function advancePass(){
   if(!tp||tp.status!=='active') return;
   var nextPass = tp.passNum + 1;
   if(nextPass > 3){
-    alert('오늘 3차까지 모두 완료! 내일 다음 범위로 넘어갑니다. 🎉');
+    setMode('dash');
+    setTimeout(function(){
+      renderDashboard();
+      var el = document.getElementById('ratioAlertBanner');
+      if(el){
+        el.style.display='block';
+        el.innerHTML='<div style="background:linear-gradient(135deg,#064e3b,#065f46);border-radius:10px;padding:14px 16px;margin-bottom:10px;">'
+          +'<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:4px;">🎉 오늘 3차까지 모두 완료!</div>'
+          +'<div style="font-size:12px;color:rgba(255,255,255,.8);margin-bottom:10px;">내일 다음 범위로 이어집니다. 오늘도 수고하셨어요!</div>'
+          +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
+          +'<button onclick="pullNextDay()" style="padding:7px 16px;background:#fbbf24;color:#1e2540;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">📥 내일 진도 미리 당기기</button>'
+          +'<button onclick="this.parentElement.parentElement.parentElement.style.display=\'none\'" style="padding:7px 12px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);border-radius:7px;font-size:12px;cursor:pointer;font-family:Pretendard,sans-serif;">닫기</button>'
+          +'</div></div>';
+      }
+    }, 100);
     return;
   }
   setTodayPassNum(todayStr(), tp.round-1, nextPass);
@@ -14433,6 +14753,21 @@ updateProg();
 updateTodayUI();
 renderTodayBanner();
 
+// 플랜이 활성 상태면 앱 로드 시 오늘 배너 위치로 자동 스크롤
+(function autoScrollToBanner(){
+  try{
+    var tp = getTodayPlan ? getTodayPlan() : null;
+    if(tp && tp.status==='active'){
+      setTimeout(function(){
+        var banner = document.getElementById('todayPlanBanner');
+        if(banner && banner.offsetParent !== null){
+          banner.scrollIntoView({ behavior:'smooth', block:'start' });
+        }
+      }, 300);
+    }
+  }catch(e){}
+})();
+
 // Firebase SDK 동적 로드 (삼성 브라우저 대응)
 // 세 스크립트를 순서대로 로드하고, 모두 완료되면 initFirebase() 호출
 (function loadFirebaseSDK(){
@@ -14539,8 +14874,57 @@ function getAvailStudyDays(startStr, endStr){
 }
 
 // 학습일수 기준 날짜 계산
-function addStudyDays(startStr, n){
-  return planIncludeWeekend ? addDays(startStr, n) : addWeekdays(startStr, n);
+// ═══════════════════════════════════════════
+// 당기기(pull) 헬퍼
+// ═══════════════════════════════════════════
+function _pullKey(dateStr, roundIdx){ return 'pulled_'+dateStr+'_r'+roundIdx; }
+function getPulled(dateStr, roundIdx){ return parseInt(localStorage.getItem(_pullKey(dateStr,roundIdx))||'0'); }
+function setPulled(dateStr, roundIdx, n){ localStorage.setItem(_pullKey(dateStr,roundIdx), n); }
+
+// 특정 회독에서 startDate~(today-1)까지 누적 당긴 문항 수
+function getCumulativePulled(startDate, today, roundIdx){
+  var total = 0;
+  var d = new Date(startDate+'T00:00:00');
+  var todayD = new Date(today+'T00:00:00');
+  while(d < todayD){
+    var ds = d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+    total += getPulled(ds, roundIdx);
+    d.setDate(d.getDate()+1);
+  }
+  return total;
+}
+
+// ═══════════════════════════════════════════
+// 다음 단원 계산 헬퍼
+// ═══════════════════════════════════════════
+function getNextUnit(){
+  // 현재 단원의 다음 단원 반환 {parent, mid, sub} 또는 null
+  var par = MENU.find(function(p){ return p.id===curParent; });
+  if(!par) return null;
+  var midIdx = par.mids.findIndex(function(m){ return m.id===curMid; });
+
+  if(par.mids[midIdx] && par.mids[midIdx].hasSub){
+    var sub = par.mids[midIdx].subs;
+    var subIdx = sub.findIndex(function(s){ return s.id===curSubId; });
+    if(subIdx < sub.length-1) return {parent:curParent, mid:curMid, sub:sub[subIdx+1].id, label:sub[subIdx+1].label};
+    if(midIdx < par.mids.length-1){
+      var nm = par.mids[midIdx+1];
+      return {parent:curParent, mid:nm.id, sub:nm.hasSub?nm.subs[0].id:null, label:nm.label};
+    }
+  } else {
+    if(midIdx < par.mids.length-1){
+      var nm2 = par.mids[midIdx+1];
+      return {parent:curParent, mid:nm2.id, sub:nm2.hasSub?nm2.subs[0].id:null, label:nm2.label};
+    }
+  }
+  // 다음 대단원
+  var parIdx = MENU.findIndex(function(p){ return p.id===curParent; });
+  if(parIdx < MENU.length-1){
+    var np = MENU[parIdx+1];
+    var nm3 = np.mids[0];
+    return {parent:np.id, mid:nm3.id, sub:nm3.hasSub?nm3.subs[0].id:null, label:np.label+' > '+nm3.label};
+  }
+  return null;
 }
 
 // ════════════════════════════════════════
