@@ -349,7 +349,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 @keyframes pulse{from{opacity:.7}to{opacity:1}}
 
 /* ── 회독 플랜 ── */
-.plan-overlay{position:fixed;inset:0;min-height:100vh;min-height:100dvh;background:rgba(15,20,40,.85);display:flex;align-items:center;justify-content:center;z-index:99998;backdrop-filter:blur(6px);}
+.plan-overlay{position:fixed;inset:0;min-height:100vh;min-height:var(--app-height);background:rgba(15,20,40,.85);display:flex;align-items:center;justify-content:center;z-index:99998;backdrop-filter:blur(6px);}
 .plan-box{background:#fff;border-radius:18px;padding:32px 28px;width:420px;max-width:93vw;box-shadow:0 16px 56px rgba(0,0,0,.28);}
 .plan-box h2{font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px;}
 .plan-box p{font-size:12.5px;color:var(--dim);margin-bottom:20px;line-height:1.6;}
@@ -450,7 +450,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 
 /* ── 로그인 오버레이 ── */
 .login-overlay{
-  position:fixed; inset:0; min-height:100vh; min-height:100dvh; background:rgba(15,20,40,.82);
+  position:fixed; inset:0; min-height:100vh; min-height:var(--app-height); background:rgba(15,20,40,.82);
   display:flex; align-items:center; justify-content:center;
   z-index:99999; backdrop-filter:blur(6px);
 }
@@ -545,7 +545,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 .sync-code-badge:hover{ background:#e8effe; }
 /* 모달 */
 .code-modal-overlay{
-  position:fixed; inset:0; min-height:100vh; min-height:100dvh; background:rgba(0,0,0,.45);
+  position:fixed; inset:0; min-height:100vh; min-height:var(--app-height); background:rgba(0,0,0,.45);
   display:flex; align-items:center; justify-content:center;
   z-index:9999;
 }
@@ -926,10 +926,10 @@ var UNIT_AA = [
       '④ ㄷ, ㄹ'
     ],
     exps: [
-      {ox: 'X', t: 'ㄱ. 정보공개 비공개결정에 대한 이의신청 후에도 행정심판을 제기할 수 있다.'},
-      {ox: 'O', t: 'ㄴ. 토지수용위원회의 수용재결에 대한 이의절차는 실질적으로 행정심판의 성질을 갖는다.'},
-      {ox: 'O', t: 'ㄷ. 난민불인정결정에 대한 이의신청을 한 경우에는 행정심판을 청구할 수 없다.'},
-      {ox: 'X', t: 'ㄹ. 민원 거부처분에 대한 이의신청 여부와 관계없이 행정심판을 제기할 수 있다.'}
+      {ox: 'X', t: 'ㄱ. 「공공기관의 정보공개에 관한 법률」상 정보공개와 관련한 공공기관의 비공개결정에 대하여 이의신청을 한 경우'},
+      {ox: 'O', t: 'ㄴ. 「공익사업을 위한 토지 등의 취득 및 보상에 관한 법률」상 토지수용위원회의 수용재결에 이의가 있어 중앙토지수용위원회에 이의를 신청한 경우'},
+      {ox: 'O', t: 'ㄷ. 「난민법」상 난민불인정결정에 대해 법무부장관에게 이의신청을 한 경우'},
+      {ox: 'X', t: 'ㄹ. 「민원 처리에 관한 법률」상 법정민원에 대한 행정기관의 장의 거부처분에 대해 그 행정기관의 장에게 이의신청을 한 경우'}
     ],
     tip: '💡 특별행정심판 절차를 거치는 경우 일반행정심판 제기 불가'
   },
@@ -1042,10 +1042,10 @@ var UNIT_AA = [
       '④ ㄴ, ㄷ, ㄹ'
     ],
     exps: [
-      {ox: 'O', t: 'ㄱ. 거부처분 취소재결 시 처분청은 재결 취지에 따라 다시 이전 신청에 대한 처분을 해야 한다.'},
-      {ox: 'O', t: 'ㄴ. 기속력은 인용재결에만 인정되고 기각재결에는 인정되지 않는다.'},
-      {ox: 'X', t: 'ㄷ. 기속력은 재결의 주문 및 구체적 위법사유에 관한 판단에도 미친다.'},
-      {ox: 'X', t: 'ㄹ. 간접강제는 청구인의 신청이 있어야 하며 위원회가 직권으로 할 수 없다.'}
+      {ox: 'O', t: 'ㄱ. 재결에 의하여 취소되거나 무효 또는 부존재로 확인되는 처분이 당사자의 신청을 거부하는 것을 내용으로 하는 경우에는 그 처분을 한 행정청은 재결의 취지에 따라 다시 이전의 신청에 대한 처분을 하여야 한다.'},
+      {ox: 'O', t: 'ㄴ. 재결의 기속력은 인용재결의 경우에만 인정되고, 기각재결에서는 인정되지 않는다.'},
+      {ox: 'X', t: 'ㄷ. 기속력은 재결의 주문에만 미치고, 처분 등의 구체적 위법사유에 관한 판단에는 미치지 않는다.'},
+      {ox: 'X', t: 'ㄹ. 행정심판 인용재결에 따른 행정청의 재처분 의무에도 불구하고 행정청이 인용재결에 따른 처분을 하지 아니하는 경우에, 행정심판위원회는 청구인의 신청이 없어도 결정으로 일정한 배상을 하도록 명할 수 있다.'}
     ],
     tip: '💡 간접강제는 당사자의 신청이 필수 요건임'
   },
@@ -4031,9 +4031,9 @@ var UNIT_BC = [
       '④ ㄱ, ㄴ, ㄷ'
     ],
     exps: [
-      {ox: 'O', t: 'ㄱ. 일반재산 대부계약은 국가가 사경제 주체로서 상대방과 대등한 위치에서 행하는 사법상의 계약이지 행정처분이 아니다. (출처: 기출집 p.49)'},
-      {ox: 'X', t: 'ㄴ. 공유 일반재산 대부료 징수는 체납처분의 예에 따른 특별 구제절차가 마련되어 있으므로 민사소송으로 대부료 지급을 구하는 것은 허용되지 않는다. (출처: 기출집 p.49)'},
-      {ox: 'X', t: 'ㄷ. 국유재산의 무단점유자에 대한 변상금 부과는 행정처분이며 사법상의 법률행위가 아니다. (출처: 기출집 p.49)'}
+      {ox: 'O', t: 'ㄱ. 甲이 乙에게 대부하는 행위는 공권력의 주체로서 상대방의 의사 여하에 불구하고 일방적으로 행하는 행정처분이 아니다. → 일반재산 대부계약은 국가가 사경제 주체로서 상대방과 대등한 위치에서 행하는 사법상의 계약이지 행정처분이 아니다. 대부료의 납부고지 역시 사법상의 이행청구에 해당하고 행정처분이라 할 수 없다(대판 2000.2.11. 99다61675). (출처: 기출집 p.49)'},
+      {ox: 'X', t: 'ㄴ. 甲은 대부료를 납부하지 않은 乙을 상대로 민사소송을 제기하여 대부료 지급을 구해야 한다. → 공유 일반재산의 대부료 징수에 관하여 지방세 체납처분의 예에 따른 간이하고 경제적인 특별한 구제절차가 마련되어 있으므로, 특별한 사정이 없는 한 민사소송으로 공유 일반재산의 대부료 지급을 구하는 것은 허용되지 아니한다(대판 2017.4.13. 2013다207941). (출처: 기출집 p.49)'},
+      {ox: 'X', t: 'ㄷ. 변상금 부과처분은 순전히 사경제 주체로서 행하는 사법상의 법률행위이므로, 丙은 그 처분에 대해 민사소송을 제기하여 다툴 수 있다. → 국유재산의 무단점유자에 대한 변상금 부과는 행정처분으로 그 목적이 국유재산의 사용·수익으로 인한 이익의 환수를 넘어 국유재산의 효율적인 보존·관리라는 공익을 실현하는 데 있다(대판 2014.7.16. 2011다76402 전합). (출처: 기출집 p.49)'}
     ],
     tip: '💡 대부료 징수에 강제징수 절차가 있다면 민사소송을 제기할 수 없습니다.'
   },
@@ -11437,6 +11437,7 @@ var currentUser = null;
 var syncCode = null;
 var firebaseReady = false;
 var autoSyncTimer = null;
+var _cloudWriting = false; // pushToCloud 중복 실행 방지 플래그
 
 function initFirebase() {
   if(firebaseConfig.apiKey === 'YOUR_API_KEY') {
@@ -11501,18 +11502,71 @@ function copyPageUrl(){
   var url = location.href;
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(url).then(function(){
-      alert('주소가 복사됐습니다!\nChrome 또는 Safari 주소창에 붙여넣기 해주세요.');
-    }).catch(function(){ _fallbackCopy(url); });
-  } else { _fallbackCopy(url); }
+      _showCopyToast('✅ 주소 복사 완료! Chrome / Safari 주소창에 붙여넣기 해주세요.');
+    }).catch(function(){ _showCopyFallback(url); });
+  } else {
+    _showCopyFallback(url);
+  }
 }
-function _fallbackCopy(url){
-  var el = document.createElement('textarea');
-  el.value = url; el.style.position='fixed'; el.style.opacity='0';
-  document.body.appendChild(el); el.select();
-  try{ document.execCommand('copy'); alert('주소가 복사됐습니다!\nChrome 또는 Safari에서 열어주세요.'); }
-  catch(e){ alert('주소를 직접 복사해 주세요:\n'+url); }
-  document.body.removeChild(el);
+
+function _showCopyToast(msg){
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);'
+    + 'background:#1e2540;color:#fff;padding:11px 20px;border-radius:10px;'
+    + 'font-size:13px;font-family:Pretendard,sans-serif;z-index:999999;'
+    + 'white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.35);';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 3000);
 }
+
+/* 클립보드 API 실패 → readonly input 오버레이: 탭하면 전체 선택돼 복사 가능 */
+function _showCopyFallback(url){
+  var prev = document.getElementById('_copyFallbackBox');
+  if(prev) prev.remove();
+
+  var ov = document.createElement('div');
+  ov.id = '_copyFallbackBox';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);'
+    + 'display:flex;align-items:center;justify-content:center;'
+    + 'z-index:999999;padding:20px;';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:14px;padding:22px 18px;'
+    + 'width:100%;max-width:400px;box-shadow:0 12px 40px rgba(0,0,0,.3);';
+
+  box.innerHTML = '<p style="font-weight:700;font-size:14px;color:#1a1f36;margin-bottom:6px;">📋 주소를 직접 복사해 주세요</p>'
+    + '<p style="font-size:12px;color:#4a5080;line-height:1.65;margin-bottom:12px;">'
+    + '아래 주소창을 <b>꾹 눌러 전체 선택</b> 후 복사하세요.<br>'
+    + '복사 후 Chrome 또는 Safari 주소창에 붙여넣기 해주세요.</p>';
+
+  var inp = document.createElement('input');
+  inp.type = 'text';
+  inp.readOnly = true;
+  inp.value = url;
+  inp.style.cssText = 'width:100%;border:2px solid #2563eb;border-radius:8px;'
+    + 'padding:10px 12px;font-size:12px;font-family:monospace;'
+    + 'color:#1a1f36;background:#eff6ff;outline:none;';
+  inp.addEventListener('focus', function(){ this.select(); });
+  inp.addEventListener('click',  function(){ this.select(); });
+
+  var btn = document.createElement('button');
+  btn.textContent = '닫기';
+  btn.style.cssText = 'margin-top:14px;width:100%;padding:10px;border:none;'
+    + 'border-radius:8px;background:#1e2540;color:#fff;font-size:13px;'
+    + 'font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;';
+  btn.onclick = function(){ ov.remove(); };
+
+  box.appendChild(inp);
+  box.appendChild(btn);
+  ov.appendChild(box);
+  ov.addEventListener('click', function(e){ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
+
+  setTimeout(function(){ inp.focus(); inp.select(); }, 80);
+}
+
+function _fallbackCopy(url){ _showCopyFallback(url); }
 
 function showLoginOverlay(){
   var el = document.getElementById('loginOverlay');
@@ -11546,12 +11600,22 @@ function showGuestUI(){
 
 // ── 구글 로그인 ────────────────────────────────────────
 function signInWithGoogle(){
-  if(!firebaseReady){ alert('Firebase가 설정되지 않았습니다.'); return; }
+  if(!firebaseReady){
+    // Firebase SDK 아직 로드 중 → 준비되면 자동 재시도
+    var btn = document.querySelector('.google-login-btn');
+    if(btn){ btn.textContent = '⏳ 연결 중...'; btn.disabled = true; }
+    var retryTimer = setInterval(function(){
+      if(firebaseReady){
+        clearInterval(retryTimer);
+        if(btn){ btn.disabled = false; btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg> Google로 로그인'; }
+        signInWithGoogle();
+      }
+    }, 300);
+    return;
+  }
   var provider = new firebase.auth.GoogleAuthProvider();
-  // 삼성 인터넷 등 팝업 미지원 브라우저 대응: redirect 폴백
   fbAuth.signInWithPopup(provider).catch(function(e){
     if(e.code==='auth/popup-blocked'||e.code==='auth/popup-closed-by-user'||e.code==='auth/operation-not-supported-in-this-environment'){
-      // 팝업 불가 → 리다이렉트 방식으로 전환
       fbAuth.signInWithRedirect(provider).catch(function(e2){
         alert('로그인 실패: ' + e2.message);
       });
@@ -11663,17 +11727,20 @@ function loadCloudState(uid){
 
 
 
-// ── 자동 동기화 (30초마다 저장) ───────────────────────
+// ── 자동 동기화 (60초마다 저장 — 배터리·데이터 최적화) ──
 function startAutoSync(uid){
   if(autoSyncTimer) clearInterval(autoSyncTimer);
   autoSyncTimer = setInterval(function(){
     pushToCloud(uid, false);
-  }, 30000);
+  }, 60000);
 }
 
 // ── 클라우드에 저장 ────────────────────────────────────
 function pushToCloud(uid, showMsg){
   if(!firebaseReady || !fbDb || !uid) return;
+  // 이미 쓰기 진행 중이면 자동 호출(showMsg=false)은 skip
+  if(_cloudWriting && !showMsg) return;
+  _cloudWriting = true;
   var status = document.getElementById('syncStatus');
   if(status){ status.className = 'sync-status syncing'; status.textContent = '↻'; }
   // 학습 판정 state + 플랜 데이터 함께 저장
@@ -11682,6 +11749,7 @@ function pushToCloud(uid, showMsg){
   if(planData) payload.plan = planData;
   fbDb.ref('users/' + uid).update(payload)
     .then(function(){
+      _cloudWriting = false;
       if(status){ status.className = 'sync-status'; status.textContent = '●'; }
       if(showMsg){
         var info = document.getElementById('syncInfo');
@@ -11690,6 +11758,7 @@ function pushToCloud(uid, showMsg){
       }
     })
     .catch(function(){
+      _cloudWriting = false;
       if(status){ status.className = 'sync-status error'; status.textContent = '●'; }
     });
 }
@@ -11827,10 +11896,10 @@ function migrateReviewFlags(){
 }
 function saveState(){
   try{ localStorage.setItem(SK,JSON.stringify(state)); }catch(e){}
-  // 로그인 상태면 클라우드에도 즉시 반영 (디바운스 500ms)
+  // 로그인 상태면 클라우드에도 반영 (디바운스 2000ms → 연속 판정 시 불필요한 쓰기 방지)
   if(currentUser && firebaseReady){
     if(saveState._t) clearTimeout(saveState._t);
-    saveState._t = setTimeout(function(){ pushToCloud(currentUser.uid, false); }, 500);
+    saveState._t = setTimeout(function(){ pushToCloud(currentUser.uid, false); }, 2000);
   }
 }
 
@@ -11960,6 +12029,15 @@ function setMode(m){
     if(resultBanner) resultBanner.style.display='none';
     if(bulkBar) bulkBar.style.display='none';
     if(todayBanner) todayBanner.style.display='none';
+    // 대시보드에서는 단원 탭/검색바 전부 숨김 (겹침 방지 + 불필요 제거)
+    var _pb=document.querySelector('.parent-bar');
+    var _mb=document.querySelector('.mid-bar');
+    var _sb=document.getElementById('subBar');
+    var _srch=document.getElementById('searchBar');
+    if(_pb) _pb.style.display='none';
+    if(_mb) _mb.style.display='none';
+    if(_sb) _sb.style.display='none';
+    if(_srch) _srch.style.display='none';
     renderDashboard();
   } else if(m==='help'){
     if(helpPanel){ helpPanel.style.display='block'; renderHelpPanel(); }
@@ -11986,6 +12064,7 @@ function setMode(m){
     } else {
       if(parentBar) parentBar.style.display='';
       if(midBar) midBar.style.display='';
+      if(subBar2) subBar2.style.display='';
       if(searchBar) searchBar.style.display='';
     }
     renderAll();
@@ -12465,7 +12544,7 @@ function buildBoxItemRow(q2,item){
 // buildGnRow - 유형2/3 (index 기반)
 // ═══════════════════════════════════════════
 
-function buildGnRow(q2,item,expIdx){
+function buildGnRow(q2,item,expIdx,expOverride){
   var isReview=(mode==='review'||mode==='globalReview');
   var isFinal=(mode==='final');
   if(isReview){
@@ -12487,7 +12566,7 @@ function buildGnRow(q2,item,expIdx){
   var jCls=jv?({mastered:'judged-m',confused:'judged-c',failed:'judged-f'}[jv]):'';
   var expCls=expOpen?' exp-open':'';
   var selM=jv==='mastered'?' sel-m':''; var selC=jv==='confused'?' sel-c':''; var selF=jv==='failed'?' sel-f':'';
-  var exp=q2.exps[expIdx]||{t:'',ox:'O'};
+  var exp=expOverride||(q2.exps[expIdx]||{t:'',ox:'O'});
   var isWrong=exp.ox==='X';
   var expText=exp.t.replace(/^[ㄱ-ㅎ]\.\ */,'');
   var div=document.createElement('div');
@@ -12706,11 +12785,17 @@ function mkCard(q){
     optsWrap.appendChild(ai);
 
   } else if(Q_EXPS_BOX.has(q.id)){
-    // 유형2: exps[i].t 에 'ㄱ. 내용' 포함
+    // 유형2: exps[i].t 에 'ㄱ. 지문 → 해설' 포함
+    // → 기호를 기준으로 앞=지문(item.text), 뒤=해설로 분리해서 buildGnRow에 전달
     q.exps.forEach(function(exp,i){
-      var gn=exp.t.match(/^([ㄱ-ㅎ])\.\s*([\s\S]*)/);
+      var gn=exp.t.match(/^([ㄱ-ㅎ])\.\ *([\s\S]*)/);
       if(!gn) return;
-      var el=buildGnRow(q,{label:gn[1],text:gn[2]},i);
+      var full=gn[2];
+      var sep=full.indexOf(' → ');
+      var stmtText = sep>=0 ? full.slice(0,sep).trim() : full.trim();
+      var descText = sep>=0 ? full.slice(sep+3).trim() : full.trim();
+      var expPatched = {ox:exp.ox, t:descText};
+      var el=buildGnRow(q,{label:gn[1],text:stmtText},i,expPatched);
       if(el) optsWrap.appendChild(el);
     });
     var ai2=document.createElement('div'); ai2.className='box-ans-info';
@@ -12880,6 +12965,21 @@ function updateProg(){
   }
   var total = Qs.length;
 
+  // ── 지문 단위 진도 집계 (문제 완료 수 → 판정된 지문 수) ──
+  var totalStmts = 0, doneStmts = 0;
+  Qs.forEach(function(q){
+    if(Q_OPTS_BOX.has(q.id)||Q_EXPS_BOX.has(q.id)){
+      q.exps.forEach(function(e,i){ totalStmts++; if(getGnJudge(q.id,i)) doneStmts++; });
+    } else {
+      var parsed2=parseBoxStem(q.stem);
+      if(parsed2.items.length>0&&!Q3_TYPE.has(q.id)){
+        parsed2.items.forEach(function(it){ totalStmts++; if(getBoxJudge(q.id,it.label)) doneStmts++; });
+      } else {
+        q.opts.forEach(function(o,i){ totalStmts++; if(getOptJudge(q.id,i+1)) doneStmts++; });
+      }
+    }
+  });
+
   // 완료 문항 수 (모든 지문 판정 완료 기준 - 원본 state 기준)
   var done = Qs.filter(function(q){ return isQDone(q); }).length;
 
@@ -12916,25 +13016,49 @@ function updateProg(){
   });
   var rev = Qs.filter(function(q){ return needsReview(q.id); }).length;
 
-  // 상단 칩 업데이트
-  var elDone=document.getElementById('sDone'); if(elDone) elDone.textContent=done;
-  var elTotal=document.getElementById('sTotal'); if(elTotal) elTotal.textContent=total;
+  // 상단 칩 업데이트 (진도: 지문 단위, 나머지: 기존)
+  var elDone=document.getElementById('sDone'); if(elDone) elDone.textContent=doneStmts;
+  var elTotal=document.getElementById('sTotal'); if(elTotal) elTotal.textContent=totalStmts;
   var elM=document.getElementById('sM'); if(elM) elM.textContent=m;
   var elC=document.getElementById('sC'); if(elC) elC.textContent=cf;
   var elF=document.getElementById('sF'); if(elF) elF.textContent=f;
   var elRev=document.getElementById('sRev'); if(elRev) elRev.textContent=rev;
-  var elFill=document.getElementById('pFill'); if(elFill) elFill.style.width=(total>0?(done/total*100):0)+'%';
+  var elFill=document.getElementById('pFill'); if(elFill) elFill.style.width=(totalStmts>0?(doneStmts/totalStmts*100):0)+'%';
 
   // 완료 배너 (오늘 분량 or 현재 단원 전체 완료 시)
   var rb=document.getElementById('resultBanner');
-  if(rb && (mode==='all'||mode==='plan') && total>0 && done===total){
-    var pct = Math.round(m/(m+cf+f||1)*100);
+  if(rb && (mode==='all'||mode==='plan'||mode==='review') && total>0 && done===total){
+    var pct2 = Math.round(m/(m+cf+f||1)*100);
     var rangeLabel = hasPlanToday ? '오늘 '+tp.todayQs.length+'문항' : getCurrentLabel();
-    document.getElementById('rEmoji').textContent=pct>=80?'🏆':pct>=60?'👍':'📚';
-    document.getElementById('rScore').textContent=rangeLabel+' 완료! 완벽 '+m+'지문 ('+pct+'%)';
-    document.getElementById('rMsg').textContent=hasPlanToday
-      ? '대시보드에서 다음 차수로 이동하거나 다음날 진도를 당길 수 있어요.'
-      : (pct>=80?'합격권 실력! 복습모드로 헷갈리는 지문을 점검하세요.':'복습 모드로 헷갈리는 지문을 반복 학습하세요.');
+    document.getElementById('rEmoji').textContent=pct2>=80?'🏆':pct2>=60?'👍':'📚';
+    document.getElementById('rScore').textContent=rangeLabel+' 완료! 완벽 '+m+'지문 ('+pct2+'%)';
+
+    if(hasPlanToday && (mode==='plan'||mode==='review')){
+      // 차수별 자동 완료 팝업 (1회만 표시)
+      var popKey = 'pass_done_pop_'+todayStr()+'_r'+(tp.round-1)+'_p'+tp.passNum;
+      if(!localStorage.getItem(popKey)){
+        localStorage.setItem(popKey,'1');
+        _showPassCompletePopup(tp);
+      }
+      var nextPassLabel = tp.passNum<3 ? (tp.passNum+1)+'차로 이동 →' : '대시보드로 →';
+      document.getElementById('rMsg').innerHTML =
+        '<button onclick="'+(tp.passNum<3?'advancePass()':'setMode(\'dash\')')+'" '
+        +'style="margin-top:8px;padding:8px 18px;background:'+(tp.passNum<3?'var(--c2)':'var(--correct)')+';color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">'
+        +nextPassLabel+'</button>';
+    } else if(!hasPlanToday){
+      // 플랜 없이 단원 완료 → 다음 단원 버튼
+      var nextU = getNextUnit();
+      if(nextU){
+        document.getElementById('rMsg').innerHTML =
+          '<button onclick="_goNextUnit()" '
+          +'style="margin-top:8px;padding:8px 18px;background:var(--c0);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">'
+          +'→ '+nextU.label+'</button>';
+      } else {
+        document.getElementById('rMsg').textContent = pct2>=80?'합격권 실력! 복습모드로 점검하세요.':'복습 모드로 반복 학습하세요.';
+      }
+    } else {
+      document.getElementById('rMsg').textContent = '대시보드에서 다음 차수로 이동하세요.';
+    }
     rb.classList.add('visible');
   } else if(rb){ rb.classList.remove('visible'); }
 
@@ -13181,14 +13305,14 @@ function renderDashboard(){
         +'</div>'
         + progressNote
         +'<div style="font-size:12px;color:var(--dim);margin-bottom:6px;font-weight:600;">'+passLabel+modeTag+'</div>'
-        +'<div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;">오늘 범위: '+(tp.startIdx+1)+'~'+tp.endIdx+'번째 ('+tp.todayQs.length+'문제) &nbsp;·&nbsp; 현재 차수 대상: '+total0+'문항</div>'
+        +'<div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;">오늘 범위: '+(tp.startIdx+1)+'~'+tp.endIdx+'번째 ('+tp.todayQs.length+'문제)'
+        +' &nbsp;·&nbsp; 현재 차수 대상: '+total0+'문항</div>'
         +'<div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden;margin-bottom:5px;"><div style="height:100%;width:'+pct0+'%;background:linear-gradient(90deg,#34d399,#60a5fa);border-radius:5px;transition:width .5s;"></div></div>'
         +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:12px;"><span>'+done0+'/'+total0+' 완료 ('+pct0+'%)</span><span>D-'+tp.daysLeft+'일 남음</span></div>'
         +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
         +'<button onclick="startTodayStudy()" style="padding:8px 18px;background:#fbbf24;color:#1e2540;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">'+(tp.isFullPass?'📖 학습 시작':'🔁 복습 시작')+'</button>'
         +(tp.passNum<3?'<button onclick="advancePass()" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--dim);font-family:Pretendard,sans-serif;">다음 차수 →</button>':'')
         +(tp.passNum>1?'<button onclick="retreatPass()" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--dim);font-family:Pretendard,sans-serif;">← 이전 차수</button>':'')
-        +(pct0>=100?'<button onclick="pullNextDay()" style="padding:8px 14px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:Pretendard,sans-serif;">📥 다음날 당기기</button>':'')
         +'<button onclick="openPlanOverlay()" style="padding:8px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--muted);font-family:Pretendard,sans-serif;">⚙ 플랜 수정</button>'
         +'</div>';
     } else {
@@ -13228,13 +13352,12 @@ function renderDashboard(){
         +'<button class="delay-btn ignore" onclick="ignorDelay()">일단 무시</button>'
         +'</div></div>';
     } else if(diff > 0) {
-      // 앞서가는 경우: 다음날 미리 당기기 + 플랜 앞당기기
+      // 앞서가는 경우: 플랜 앞당기기
       var aheadDays = tp&&tp.status==='active'&&tp.qPerDay>0 ? Math.round(diff/tp.qPerDay) : 0;
       delayHtml = '<div class="delay-alert ok" style="margin-top:12px;">'
         +'<div class="delay-alert-title">'+statusMsg+'</div>'
-        +'<div class="delay-alert-desc">진도가 앞서있어요. 계속 당길까요?</div>'
+        +'<div class="delay-alert-desc">진도가 앞서있어요!</div>'
         +'<div class="delay-actions">'
-        +'<button class="delay-btn catch" onclick="pullNextDay()" style="background:#059669;">📥 다음날 진도 미리 당기기</button>'
         +(aheadDays>=2?'<button class="delay-btn replan" onclick="replanFaster()">⚡ 플랜 앞당기기 (약 '+aheadDays+'일)</button>':'')
         +'</div></div>';
     } else {
@@ -13407,12 +13530,21 @@ function renderDashboard(){
 
 // ── 문제 완료 여부 헬퍼 ──────────────────────────────
 function isQDone(q){
+  // 유형2/3: Q_OPTS_BOX, Q_EXPS_BOX (exp 열람 기준)
   if(Q_OPTS_BOX.has(q.id)||Q_EXPS_BOX.has(q.id)){
     var cnt=q.exps.length; if(!cnt) return false;
-    for(var i=0;i<cnt;i++){if(!getGnExp(q.id,i))return false;} return true;
+    for(var i=0;i<cnt;i++){if(!getGnExp(q.id,i))return false;}
+    return true;
   }
-  var parsed=parseBoxStem(q.stem); var boxMode=parsed.items.length>0&&!Q3_TYPE.has(q.id);
-  if(boxMode) return parsed.items.every(function(it){return getBoxExp(q.id,it.label);});
+  // 유형1: A~E, ㄱ~ㅈ 박스형 (boxExp 열람 기준)
+  var parsed=parseBoxStem(q.stem);
+  var boxMode=parsed.items.length>0&&!Q3_TYPE.has(q.id);
+  if(boxMode){
+    if(parsed.items.length===0) return false; // 빈 배열 오판 방지
+    return parsed.items.every(function(it){return getBoxExp(q.id,it.label);});
+  }
+  // 일반 4지선다: _e 해설 열람 기준 (opts 빈 배열이면 false)
+  if(!q.opts||q.opts.length===0) return false;
   return q.opts.every(function(o,i){return !!(state[q.id+'_e']||{})[i+1];});
 }
 
@@ -13459,15 +13591,14 @@ function jumpToDayRange(sIdx, eIdx, ds){
 }
 
 // ── 밀림 처리 함수들 ──────────────────────────────────
+// 오늘 몰아치기: 밀린 문제(오늘 범위 이전 미완료)를 오늘 학습 큐에 추가
 function catchUpPlan(){
-  // 오늘 범위에 밀린 분량 합산하여 planStudyQIds 확장
   var allQ = getPlanQuestions();
   var tp = getTodayPlan();
   if(!tp||tp.status!=='active') return;
-  // 밀린 문제: 아직 완료 안 된 것 전체 (오늘 범위 이전 포함)
   var notDone = allQ.slice(0, tp.endIdx).filter(function(q){ return !isQDone(q); });
   if(notDone.length===0){ alert('밀린 문제가 없어요! 👍'); return; }
-  if(!confirm(notDone.length+'문항을 오늘 몰아서 학습할까요?')) return;
+  if(!confirm('🔥 오늘 몰아치기\n\n밀린 '+notDone.length+'문항을 오늘 학습 목록에 추가합니다.\n\n지금 바로 시작할까요?')) return;
   planStudyMode = true;
   planStudyQIds = notDone.map(function(q){return q.id;});
   setMode('plan');
@@ -13476,52 +13607,87 @@ function catchUpPlan(){
 function replanFromToday(){
   var plan = loadPlan();
   if(!plan) return;
-  if(!confirm('📅 일정 재조정\n\n오늘('+todayStr()+')부터 시험일('+plan.examDate+')까지\n△·X 비율을 반영해 일정을 재계산합니다.\n\n진행 기록은 유지됩니다. 재조정할까요?')) return;
-  var newPlan = calcPlan(todayStr(), plan.examDate, plan.d1||21, plan.goalRounds||9);
-  savePlanData(newPlan);
+  var allQ = getPlanQuestions();
+  var today = todayStr();
+  var tp = getTodayPlan();
+  if(!tp||tp.status!=='active'){ alert('현재 진행 중인 플랜이 없습니다.'); return; }
+
+  var ri = tp.round - 1; // 현재 회독 인덱스 (0-based)
+  var curRound = plan.rounds[ri];
+
+  // ── 현재 회독 재산정 ──
+  // 남은 학습일수: 오늘 ~ 현재 회독 마감일
+  var remainDays = Math.max(1, getAvailStudyDays(today, curRound.endDate));
+  // 실제 남은 문항: 현재 회독 대상 중 미완료
+  var remainQs;
+  if(tp.isFullPass){
+    remainQs = allQ.filter(function(q){ return !isQDone(q); });
+  } else {
+    remainQs = allQ.filter(function(q){ return hasWrongOrConfused(q); });
+    if(remainQs.length===0) remainQs = allQ;
+  }
+  var newQpd = Math.max(1, Math.ceil(remainQs.length / remainDays));
+
+  // ── 이후 회독 재산정 ──
+  // 실제 △·X 수를 직접 사용 (추정 비율 대신)
+  var actualWrongCount = allQ.filter(function(q){ return hasWrongOrConfused(q); }).length;
+  var rActual = allQ.length > 0 ? actualWrongCount / allQ.length : 0.5;
+
+  var confirmMsg = '📅 일정 재조정
+
+'
+    + '◾ 현재: ' + tp.round + '회독 ' + tp.dayInRound + '/' + tp.roundDays + '일차
+'
+    + '◾ 남은 학습일: ' + remainDays + '일
+'
+    + '◾ 남은 문항: ' + remainQs.length + '문항
+'
+    + '◾ 조정된 일일 목표: ' + newQpd + '문항/일
+'
+    + '  (기존: ' + tp.qPerDay + '문항/일)
+
+'
+    + '마감일(' + plan.examDate + ')은 유지됩니다.
+진행 기록도 유지됩니다.
+
+재조정할까요?';
+
+  if(!confirm(confirmMsg)) return;
+
+  // 현재 회독 qPerDay 업데이트
+  plan.rounds[ri].qPerDay = newQpd;
+  plan.rounds[ri].adjusted = true;
+
+  // 이후 회독: 실제 △·X 수 기반으로 targetCount/qPerDay 재산정
+  for(var i = ri + 1; i < plan.rounds.length; i++){
+    var r = plan.rounds[i];
+    var tc;
+    if(r.isFullRound){
+      tc = allQ.length; // 전체 학습 회독
+    } else {
+      // △·X 회독: 실제 현재 △·X 수 반영
+      var setScale = i <= 2 ? 1.0 : (i <= 5 ? 0.85 : 0.70);
+      tc = Math.max(1, Math.round(actualWrongCount * setScale));
+    }
+    var rDays = Math.max(1, r.days);
+    plan.rounds[i].targetCount = tc;
+    plan.rounds[i].qPerDay = Math.max(1, Math.ceil(tc / rDays));
+    plan.rounds[i].adjusted = true;
+  }
+
+  // wrongRatio도 실제값으로 업데이트
+  plan.wrongRatio = rActual;
+
+  savePlanData(plan);
   renderDashboard();
   renderTodayBanner();
-  alert('✅ 일정이 재조정됐습니다!\n\n새 △·X 비율 '+Math.round((newPlan.wrongRatio||0)*100)+'% 반영됨');
-}
+  alert('✅ 일정이 재조정됐습니다!
 
-// ── 다음날 진도 미리 당기기 ──────────────────────────────
-// 오늘 3차까지 완료 시, 또는 오늘 진도가 앞선 경우 내일 범위를 당겨서 지금 학습
-function pullNextDay(){
-  var tp = getTodayPlan();
-  if(!tp||tp.status!=='active') return;
-  var allQ = getPlanQuestions();
-  var plan = tp.plan;
-
-  // 현재 회독에서 오늘 이후 남은 문항 찾기
-  var nextStartIdx = tp.endIdx;
-  var targetQs;
-  if(tp.isFullRound){
-    targetQs = allQ.filter(function(q){ return !isQDone(q); });
-  } else {
-    targetQs = allQ.filter(function(q){ return hasWrongOrConfused(q); });
-    if(targetQs.length===0) targetQs = allQ;
-  }
-
-  if(nextStartIdx >= targetQs.length){
-    alert('🎉 이 회독의 모든 문항을 완료했어요!\n대시보드에서 플랜 앞당기기를 이용해 주세요.');
-    setMode('dash');
-    return;
-  }
-
-  // 내일 분량 (qPerDay만큼) 미리 가져오기
-  var nextEndIdx = Math.min(nextStartIdx + tp.qPerDay, targetQs.length);
-  var nextQs = targetQs.slice(nextStartIdx, nextEndIdx);
-
-  if(!confirm('📥 다음날 진도 당기기\n\n다음 범위 '+nextQs.length+'문항을 지금 학습할까요?\n(Q'+(nextStartIdx+1)+'~Q'+nextEndIdx+'번째 문항)')) return;
-
-  planStudyMode = true;
-  planStudyQIds = nextQs.map(function(q){return q.id;});
-  if(tp.isFullRound){
-    setMode('plan');
-  } else {
-    setMode('review');
-  }
-  window.scrollTo({top:200, behavior:'smooth'});
+'
+    + '현재 회독: ' + newQpd + '문항/일로 조정
+'
+    + '실제 △·X ' + actualWrongCount + '문항(' + Math.round(rActual*100) + '%) 기준으로
+이후 회독 문항수 재산정 완료');
 }
 
 // ── 빠른 진도 반영 플랜 앞당기기 ────────────────────────
@@ -13559,6 +13725,49 @@ function replanFaster(){
 
 function ignorDelay(){
   renderDashboard(); // 그냥 닫기 (아무것도 안 함)
+}
+
+// ── 차수 완료 팝업 ──────────────────────────────────────
+function _showPassCompletePopup(tp){
+  var old = document.getElementById('passCompletePopup');
+  if(old) old.remove();
+
+  var isLast = (tp.passNum >= 3);
+  var title   = isLast ? '🎉 오늘 3차까지 모두 완료!' : tp.passNum+'차 완료!';
+  var subMsg  = isLast
+    ? '오늘 학습을 모두 마쳤습니다.\n대시보드로 돌아가거나 다음날 진도를 당길 수 있어요.'
+    : (tp.passNum+1)+'차 복습모드로 이동할까요?\n(△·X 지문만 다시 풀기)';
+  var btnLabel = isLast ? '📊 대시보드로' : '🔁 '+(tp.passNum+1)+'차 시작';
+  var btnAction = isLast ? 'setMode(\'dash\')' : 'advancePass()';
+  var btn2 = '<button onclick="document.getElementById(\'passCompletePopup\').remove();" style="padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;color:var(--dim);font-family:Pretendard,sans-serif;">'+(isLast?'닫기':'계속 보기')+'</button>';
+
+  var overlay = document.createElement('div');
+  overlay.id = 'passCompletePopup';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.innerHTML =
+    '<div style="background:#fff;border-radius:14px;padding:26px 22px;width:100%;max-width:340px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2);">'
+    +'<div style="font-size:32px;margin-bottom:8px;">'+(isLast?'🏆':'✅')+'</div>'
+    +'<div style="font-size:17px;font-weight:800;margin-bottom:8px;">'+title+'</div>'
+    +'<div style="font-size:12.5px;color:var(--dim);margin-bottom:20px;line-height:1.7;white-space:pre-line;">'+subMsg+'</div>'
+    +'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">'
+    +'<button onclick="'+btnAction+';document.getElementById(\'passCompletePopup\').remove();" style="padding:10px 18px;background:#fbbf24;color:#1e2540;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">'+btnLabel+'</button>'
+    +btn2
+    +'</div></div>';
+  document.body.appendChild(overlay);
+}
+
+// ── 다음 단원으로 이동 ──────────────────────────────────
+function _goNextUnit(){
+  var next = getNextUnit();
+  if(!next) return;
+  curParent = next.parent;
+  curMid    = next.mid;
+  curSubId  = next.sub;
+  masteryFilter = null;
+  clearSearch();
+  renderTabs();
+  renderAll();
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function jumpToQuestion(qId){
@@ -13723,6 +13932,11 @@ function calcWrongRatio(){
   기간: D1=사용자설정, D4=D1×0.7, D7=D1×0.5 (점차 감소)
   △X 회독: Dn×r (r=현재 △X비율)
 */
+// 주말 제외 옵션 반영한 날짜 이동
+function addStudyDays(startStr, n){
+  return planIncludeWeekend ? addDays(startStr, n) : addWeekdays(startStr, n);
+}
+
 function calcPlan(startDate, examDate, d1Override, goalRounds){
   var allQ=getPlanQuestions(), totalQ=allQ.length, rInfo=calcWrongRatio(), r=rInfo.r;
   var goal=goalRounds||9, D1=d1Override||21;
@@ -13848,8 +14062,9 @@ function getTodayPlan(){
     }
 
     var qPerDay = Math.max(1, Math.ceil(targetQs.length / r.days));
-    var startIdx = dayInRound * qPerDay;
-    var endIdx   = Math.min(startIdx + qPerDay, targetQs.length);
+
+    var startIdx = Math.max(0, Math.min(dayInRound * qPerDay, targetQs.length));
+    var endIdx   = Math.max(startIdx, Math.min(startIdx + qPerDay, targetQs.length));
     var todayQs  = targetQs.slice(startIdx, endIdx);
 
     // 초기화 필요 회독(4회독, 7회독) 첫날 자동 초기화 체크
@@ -13904,6 +14119,7 @@ function setTodayPassNum(today, roundIdx, n){
   var k = 'pass_day_'+today+'_r'+roundIdx;
   localStorage.setItem(k, n);
 }
+
 
 // 해당 차수의 문제 목록
 function getPassQuestions(todayQs, roundIdx, passNum, today){
@@ -14066,7 +14282,6 @@ function advancePass(){
           +'<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:4px;">🎉 오늘 3차까지 모두 완료!</div>'
           +'<div style="font-size:12px;color:rgba(255,255,255,.8);margin-bottom:10px;">내일 다음 범위로 이어집니다. 오늘도 수고하셨어요!</div>'
           +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
-          +'<button onclick="pullNextDay()" style="padding:7px 16px;background:#fbbf24;color:#1e2540;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:Pretendard,sans-serif;">📥 내일 진도 미리 당기기</button>'
           +'<button onclick="this.parentElement.parentElement.parentElement.style.display=\'none\'" style="padding:7px 12px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2);border-radius:7px;font-size:12px;cursor:pointer;font-family:Pretendard,sans-serif;">닫기</button>'
           +'</div></div>';
       }
@@ -14543,14 +14758,26 @@ function dismissRatioAlert(){
 // setMode에 plan 모드 추가
 var _origSetMode = setMode;
 
-// iOS Safari 주소창 높이 변동 대응 - 실제 뷰포트 높이를 CSS 변수로 주입
+// iOS Safari 주소창 높이 변동 대응 - visualViewport 우선, fallback innerHeight
 (function setAppHeight(){
   function update(){
-    document.documentElement.style.setProperty('--app-height', window.innerHeight+'px');
+    // visualViewport: iOS Safari 주소창 슬라이드 시 실제 보이는 높이를 정확히 반영
+    var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    document.documentElement.style.setProperty('--app-height', h + 'px');
   }
   update();
+  // visualViewport resize: iOS Safari 주소창 나타남/사라짐 시 즉시 반응
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', update);
+    window.visualViewport.addEventListener('scroll', update);
+  }
+  // 일반 resize (데스크탑·안드로이드 대응)
   window.addEventListener('resize', update);
-  window.addEventListener('orientationchange', function(){ setTimeout(update, 200); });
+  // 화면 회전: iOS는 회전 완료까지 시간이 필요해 딜레이를 넉넉히 줌
+  window.addEventListener('orientationchange', function(){
+    setTimeout(update, 100);
+    setTimeout(update, 450); // 회전 애니메이션 완료 후 한 번 더
+  });
 })();
 
 loadState();
@@ -14694,8 +14921,38 @@ function getAvailStudyDays(startStr, endStr){
 }
 
 // 학습일수 기준 날짜 계산
-function addStudyDays(startStr, n){
-  return planIncludeWeekend ? addDays(startStr, n) : addWeekdays(startStr, n);
+
+// ═══════════════════════════════════════════
+// 다음 단원 계산 헬퍼
+// ═══════════════════════════════════════════
+function getNextUnit(){
+  // 현재 단원의 다음 단원 반환 {parent, mid, sub} 또는 null
+  var par = MENU.find(function(p){ return p.id===curParent; });
+  if(!par) return null;
+  var midIdx = par.mids.findIndex(function(m){ return m.id===curMid; });
+
+  if(par.mids[midIdx] && par.mids[midIdx].hasSub){
+    var sub = par.mids[midIdx].subs;
+    var subIdx = sub.findIndex(function(s){ return s.id===curSubId; });
+    if(subIdx < sub.length-1) return {parent:curParent, mid:curMid, sub:sub[subIdx+1].id, label:sub[subIdx+1].label};
+    if(midIdx < par.mids.length-1){
+      var nm = par.mids[midIdx+1];
+      return {parent:curParent, mid:nm.id, sub:nm.hasSub?nm.subs[0].id:null, label:nm.label};
+    }
+  } else {
+    if(midIdx < par.mids.length-1){
+      var nm2 = par.mids[midIdx+1];
+      return {parent:curParent, mid:nm2.id, sub:nm2.hasSub?nm2.subs[0].id:null, label:nm2.label};
+    }
+  }
+  // 다음 대단원
+  var parIdx = MENU.findIndex(function(p){ return p.id===curParent; });
+  if(parIdx < MENU.length-1){
+    var np = MENU[parIdx+1];
+    var nm3 = np.mids[0];
+    return {parent:np.id, mid:nm3.id, sub:nm3.hasSub?nm3.subs[0].id:null, label:np.label+' > '+nm3.label};
+  }
+  return null;
 }
 
 // ════════════════════════════════════════
@@ -14731,46 +14988,6 @@ function getPassQuestions(todayQs, roundIdx, passNum, today){
 // ════════════════════════════════════════
 // ⑥ 진도 미달 처리 옵션 강화
 // ════════════════════════════════════════
-function catchUpPlan(){
-  var allQ = getPlanQuestions();
-  var tp = getTodayPlan();
-  if(!tp||tp.status!=='active') return;
-  var notDone = allQ.slice(0, tp.endIdx).filter(function(q){ return !isQDone(q); });
-  if(notDone.length===0){ alert('밀린 문제가 없어요! 👍'); return; }
-
-  var choice = window.prompt(
-    '📋 진도 미달 처리 방법 선택\n\n'
-    +'1️⃣ 오늘 몰아치기 ('+notDone.length+'문항 추가)\n'
-    +'2️⃣ 일정 재조정 (남은 기간으로 재계산)\n'
-    +'3️⃣ 하루 분량 늘리기 (마감일 유지)\n\n'
-    +'번호를 입력하세요 (1/2/3):'
-  );
-
-  if(choice==='1'){
-    if(!confirm(notDone.length+'문항을 오늘 몰아서 학습할까요?')) return;
-    planStudyMode = true;
-    planStudyQIds = notDone.map(function(q){return q.id;});
-    setMode('plan');
-  } else if(choice==='2'){
-    replanFromToday();
-  } else if(choice==='3'){
-    // 마감일 유지, 하루 분량 늘리기
-    var plan = loadPlan();
-    if(!plan) return;
-    var remainDays = tp.roundDays - tp.dayInRound + 1;
-    var remainQs = allQ.filter(function(q){return !isQDone(q);});
-    var newQpd = Math.ceil(remainQs.length / remainDays);
-    if(!confirm('남은 '+remainDays+'일간 하루 '+newQpd+'문항씩 학습하도록 조정할까요?\n(기존: '+tp.qPerDay+'문항/일)')) return;
-    // 현재 회독의 qPerDay 조정 (플랜 내 저장)
-    plan.rounds[tp.round-1].qPerDay = newQpd;
-    plan.rounds[tp.round-1].adjusted = true;
-    savePlanData(plan);
-    renderTodayBanner();
-    renderDashboard();
-    alert('✅ 하루 분량이 '+newQpd+'문항으로 조정됐습니다.');
-  }
-}
-
 // ════════════════════════════════════════
 // ⑤ 설명서 탭
 // ════════════════════════════════════════
