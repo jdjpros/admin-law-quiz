@@ -3074,12 +3074,9 @@ function replanFromToday(){
   savePlanData(plan);
   renderDashboard();
   renderTodayBanner();
-  alert('✅ 일정이 재조정됐습니다!
-
-'
+  alert('✅ 일정이 재조정됐습니다!\n\n'
     + '현재 회독: ' + newQpd + '문항/일로 조정\n'
-    + '실제 △·X ' + actualWrongCount + '문항(' + Math.round(rActual*100) + '%) 기준으로
-이후 회독 문항수 재산정 완료');
+    + '실제 △·X ' + actualWrongCount + '문항(' + Math.round(rActual*100) + '%) 기준으로\n이후 회독 문항수 재산정 완료');
 }
 
 // ── 빠른 진도 반영 플랜 앞당기기 ────────────────────────
