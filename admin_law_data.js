@@ -10389,3 +10389,63 @@ var UNIT_FB = [
   }
 ];
 // 총 21문항 추출 완료
+var MENU = [
+  {id:'B', label:'행정법통론', mids:[
+    {id:'BA', label:'행정법의 법원 및 효력', data:UNIT_BA},
+    {id:'BB', label:'행정법의 일반원칙', data:UNIT_BB},
+    {id:'BC', label:'행정상 법률관계', data:UNIT_BC},
+    {id:'BD', label:'개인적 공권 및 행정법상 사건', data:UNIT_BD},
+    {id:'BE', label:'사인의 공법행위-신고', data:UNIT_BE}
+  ]},
+  {id:'C', label:'행정작용법', mids:[
+    {id:'CA', label:'행정입법', data:UNIT_CA},
+    {id:'CB_group', label:'행정행위', hasSub:true, subs:[
+      {id:'CB', label:'기속행위와 재량행위', data:UNIT_CB},
+      {id:'CC', label:'법률행위적 행정행위', data:UNIT_CC},
+      {id:'CD', label:'준법률행위적 행정행위', data:UNIT_CD},
+      {id:'CE', label:'행정행위의 부관', data:UNIT_CE},
+      {id:'CF', label:'행정행위의 요건과 효력', data:UNIT_CF},
+      {id:'CG', label:'행정행위의 하자와 승계·치유', data:UNIT_CG},
+      {id:'CH', label:'행정행위의 취소와 철회', data:UNIT_CH},
+      {id:'CI', label:'제재처분·이의신청·처분의 재심사', data:UNIT_CI}
+    ]},
+    {id:'CJ', label:'그 밖의 행정작용', data:UNIT_CJ}
+  ]},
+  {id:'D', label:'행정의 실효성 확보수단', mids:[
+    {id:'DA', label:'행정상 강제집행', data:UNIT_DA},
+    {id:'DB', label:'행정상 즉시강제와 행정조사', data:UNIT_DB},
+    {id:'DC', label:'행정벌', data:UNIT_DC},
+    {id:'DD', label:'새로운 의무이행 확보수단', data:UNIT_DD}
+  ]},
+  {id:'E', label:'행정절차와 정보공개', mids:[
+    {id:'EA', label:'행정절차법', data:UNIT_EA},
+    {id:'EB', label:'공공기관의 정보공개에 관한 법률', data:UNIT_EB},
+    {id:'EC', label:'개인정보 보호법', data:UNIT_EC}
+  ]},
+  {id:'F', label:'행정상 손해전보', mids:[
+    {id:'FA', label:'국가배상', data:UNIT_FA},
+    {id:'FB', label:'손실보상', data:UNIT_FB}
+  ]},
+  {id:'A', label:'행정쟁송', mids:[
+    {id:'AA', label:'행정심판', data:UNIT_AA},
+    {id:'AB_group', label:'취소소송', hasSub:true, subs:[
+      {id:'AB', label:'소송요건(대상적격)', data:UNIT_AB},
+      {id:'AC', label:'소송요건(원고적격)', data:UNIT_AC},
+      {id:'AD', label:'그 밖의 소송요건', data:UNIT_AD},
+      {id:'AE', label:'심리와 판결', data:UNIT_AE}
+    ]},
+    {id:'AF', label:'무효등확인소송', data:UNIT_AF},
+    {id:'AG', label:'당사자소송', data:UNIT_AG}
+  ]}
+];
+
+// ═══════════════════════════════════════════
+// 문제 유형 Set
+// ═══════════════════════════════════════════
+var O_TYPE = new Set(['AA03','AA06','AA07','AA11','AA12','AA15','AA17','AB04','AB12','AB14','AB16','AB21','AB25','AB27','AC04','AC05','AC07','AC08','AC09','AC11','AC13','AC16','AD01','AD03','AD07','AD10','AD11','AD13','AD15','AD17','AD18','AD19','AE02','AE05','AE11','AE15','AE21','AE22','AE23','AF02','AG04','AG06','BA07','BB06','BB09','BB15','BB16','BB17','BB18','BB25','BC03','BE08','BE12','BE17','CA03','CA10','CA14','CB01','CB05','CB10','CC01','CC02','CC04','CC05','CC06','CC07','CC21','CE50','CE51','CE53','CE55','CE57','CE60','CE61','CG04','CG10','CG11','CG13','CH03','CH04','CH15','CI02','CJ06','CJ07','CJ11','CJ13','CJ15','CJ20','CJ22','DA06','DA10','DA11','DA16','DA19','DA22','DA28','DA35','DA36','DB03','DB04','DB09','DB12','DC04','DC06','DC08','DC12','DC17','DC18','DD06','DD09','EA05','EA06','EA07','EA08','EA16','EA18','EA20','EA23','EA24','EB01','EB02','EB05','EB08','EB11','EB15','EB21','EB22','EB23','EB24','EC01','EC03','FA02','FA03','FA08','FA12','FA15','FA17','FB02','FB11','FB13','FB14','FB15','FB17','FB18','FB19','CF01','CF05','CF06','CF16','BB23']);
+var Q3_TYPE = new Set([]);
+// 유형2: exps[i].t 에 'ㄱ. 내용' 형태 (지문+해설 포함)
+var Q_EXPS_BOX = new Set(['AA03','AA06','AA12','BC03']);
+// 유형3: opts 자체가 'ㄱ. 내용' 형태
+var Q_OPTS_BOX = new Set(['AE15','CE57','CF06','CF16','CG11','CG12','CG13','CH04','CH15','CJ15','CJ20','CJ22','DA10','DA19','DA35','DB03','DB09','DC17','EB05','EB22','EB24','EC03','FB11','FB14']);
+var NUMS = ['①','②','③','④','⑤'];
