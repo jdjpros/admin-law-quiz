@@ -814,7 +814,6 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
   </div>
 </div>
 
-<script>
 <script src="admin_law_data.js"></script>
 <script>
 
@@ -3038,24 +3037,13 @@ function replanFromToday(){
   var actualWrongCount = allQ.filter(function(q){ return hasWrongOrConfused(q); }).length;
   var rActual = allQ.length > 0 ? actualWrongCount / allQ.length : 0.5;
 
-  var confirmMsg = '📅 일정 재조정
-
-'
-    + '◾ 현재: ' + tp.round + '회독 ' + tp.dayInRound + '/' + tp.roundDays + '일차
-'
-    + '◾ 남은 학습일: ' + remainDays + '일
-'
-    + '◾ 남은 문항: ' + remainQs.length + '문항
-'
-    + '◾ 조정된 일일 목표: ' + newQpd + '문항/일
-'
-    + '  (기존: ' + tp.qPerDay + '문항/일)
-
-'
-    + '마감일(' + plan.examDate + ')은 유지됩니다.
-진행 기록도 유지됩니다.
-
-재조정할까요?';
+  var confirmMsg = '📅 일정 재조정\n'
+    + '◾ 현재: ' + tp.round + '회독 ' + tp.dayInRound + '/' + tp.roundDays + '일차\n'
+    + '◾ 남은 학습일: ' + remainDays + '일\n'
+    + '◾ 남은 문항: ' + remainQs.length + '문항\n'
+    + '◾ 조정된 일일 목표: ' + newQpd + '문항/일\n'
+    + '  (기존: ' + tp.qPerDay + '문항/일)\n'
+    + '마감일(' + plan.examDate + ')은 유지됩니다.\n' + '진행 기록도 유지됩니다.\n재조정할까요?';
 
   if(!confirm(confirmMsg)) return;
 
@@ -3089,8 +3077,7 @@ function replanFromToday(){
   alert('✅ 일정이 재조정됐습니다!
 
 '
-    + '현재 회독: ' + newQpd + '문항/일로 조정
-'
+    + '현재 회독: ' + newQpd + '문항/일로 조정\n'
     + '실제 △·X ' + actualWrongCount + '문항(' + Math.round(rActual*100) + '%) 기준으로
 이후 회독 문항수 재산정 완료');
 }
