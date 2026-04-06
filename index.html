@@ -2047,10 +2047,12 @@ function refreshGnRv(qId,idx){
   var allQ=getAllQuestions(); var q=allQ.find(function(x){return x.id===qId;}); if(!q) return;
   var el=document.getElementById('gnrow-'+qId+'-'+idx);
   var isOpts=Q_OPTS_BOX.has(qId);
-  var label,text;
-  if(isOpts){ label=(q.opts[idx].match(/^([ㄱ-ㅎ])/)||['','?'])[1]; text=q.opts[idx].replace(/^[ㄱ-ㅎ]\.\s*/,''); }
-  else{ var t=q.exps[idx].t; label=(t.match(/^([ㄱ-ㅎ])/)||['','?'])[1]; text=t.replace(/^[ㄱ-ㅎ]\.\s*/,''); }
-  var newGnRow=buildGnRow(q,{label:label,text:text},idx); if(newGnRow&&el) el.replaceWith(newGnRow);
+  var isExpsRv=Q_EXPS_BOX.has(qId);
+  var label,text,newGnRowRv;
+  if(isOpts){ label=(q.opts[idx].match(/^([ㄱ-ㅎ])/)||['','?'])[1]; text=q.opts[idx].replace(/^[ㄱ-ㅎ]\.\s*/,''); newGnRowRv=buildGnRow(q,{label:label,text:text},idx); }
+  else if(isExpsRv){ var terv=q.exps[idx].t; label=(terv.match(/^([ㄱ-ㅎ])/)||['','?'])[1]; var ferv=terv.replace(/^[ㄱ-ㅎ]\.\s*/,''); var serv=ferv.indexOf(' → '); text=serv>=0?ferv.slice(0,serv).trim():ferv.trim(); var eperv={ox:q.exps[idx].ox,t:serv>=0?ferv.slice(serv+3).trim():ferv.trim()}; newGnRowRv=buildGnRow(q,{label:label,text:text},idx,eperv); }
+  else{ var trv=q.exps[idx].t; label=(trv.match(/^([ㄱ-ㅎ])/)||['','?'])[1]; text=trv.replace(/^[ㄱ-ㅎ]\.\s*/,''); newGnRowRv=buildGnRow(q,{label:label,text:text},idx); }
+  if(newGnRowRv&&el) el.replaceWith(newGnRowRv);
   updateProg();
 }
 // 파이널모드 "외움" 후 카드 내 지문이 전부 사라지면 카드 제거
@@ -2092,10 +2094,12 @@ function refreshGnRow(qId,idx){
   var el=document.getElementById('gnrow-'+qId+'-'+idx);
   if(!el) return;
   var isOpts=Q_OPTS_BOX.has(qId);
-  var label,text;
-  if(isOpts){ label=(q.opts[idx].match(/^([ㄱ-ㅎ])/)||['','?'])[1]; text=q.opts[idx].replace(/^[ㄱ-ㅎ]\.\s*/,''); }
-  else { var t=q.exps[idx].t; label=(t.match(/^([ㄱ-ㅎ])/)||['','?'])[1]; text=t.replace(/^[ㄱ-ㅎ]\.\s*/,''); }
-  var newGnRow=buildGnRow(q,{label:label,text:text},idx); if(newGnRow) el.replaceWith(newGnRow); else el.remove();
+  var isExps=Q_EXPS_BOX.has(qId);
+  var label,text,newGnRow;
+  if(isOpts){ label=(q.opts[idx].match(/^([ㄱ-ㅎ])/)||['','?'])[1]; text=q.opts[idx].replace(/^[ㄱ-ㅎ]\.\s*/,''); newGnRow=buildGnRow(q,{label:label,text:text},idx); }
+  else if(isExps){ var te=q.exps[idx].t; label=(te.match(/^([ㄱ-ㅎ])/)||['','?'])[1]; var fe=te.replace(/^[ㄱ-ㅎ]\.\s*/,''); var se=fe.indexOf(' → '); text=se>=0?fe.slice(0,se).trim():fe.trim(); var epe={ox:q.exps[idx].ox,t:se>=0?fe.slice(se+3).trim():fe.trim()}; newGnRow=buildGnRow(q,{label:label,text:text},idx,epe); }
+  else { var t=q.exps[idx].t; label=(t.match(/^([ㄱ-ㅎ])/)||['','?'])[1]; text=t.replace(/^[ㄱ-ㅎ]\.\s*/,''); newGnRow=buildGnRow(q,{label:label,text:text},idx); }
+  if(newGnRow) el.replaceWith(newGnRow); else el.remove();
   var banner=document.getElementById('qbanner-'+qId); if(banner) updateAnsBanner(qId,q,banner);
   refreshTip(qId,q); updateProg();
 }
