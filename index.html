@@ -4234,20 +4234,29 @@ renderTodayBanner();
   }
   loadNext(0);
 })();
-// ⑦ 뒤로가기 버튼 방지 (삼성/크롬 브라우저 창 꺼짐 방지)
-// 히스토리 스택에 2개 이상 쌓아두어 popstate가 창 종료로 이어지지 않게 함
+// ⑦ 뒤로가기 버튼 → 이전 모드로 복원 (창 종료 방지)
 (function(){
-  // 초기 진입 시 히스토리 2개 확보
-  history.replaceState({page:'app'}, '', location.href);
-  history.pushState({page:'app'}, '', location.href);
+  var _popHandling = false;
+  var _initialized = false;
+
+  history.replaceState({mode:'dash'}, '');
 
   window.addEventListener('popstate', function(e){
-    // 뒤로가기 감지 → 다시 앞으로 되돌림
-    history.pushState({page:'app'}, '', location.href);
-    // 사용자에게 선택 옵션 제공 (원할 경우 종료 가능)
-    // 필요 시 아래 confirm 주석 해제
-    // if(confirm('앱을 종료하시겠습니까?')){ history.go(-2); }
+    var m = (e.state && e.state.mode) ? e.state.mode : 'dash';
+    _popHandling = true;
+    setMode(m);
+    renderAll();
+    _popHandling = false;
   });
+
+  var _origSetMode = setMode;
+  setMode = function(m){
+    _origSetMode(m);
+    if(!_popHandling){
+      if(!_initialized){ history.replaceState({mode:m}, ''); _initialized=true; }
+      else { history.pushState({mode:m}, ''); }
+    }
+  };
 })();
 
 setTimeout(function(){
