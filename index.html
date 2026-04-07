@@ -2925,7 +2925,7 @@ function renderDashboard(){
     var cur = parseDate(planStart);
     while(dateStr(cur) <= today){
       var ds2 = dateStr(cur);
-      var n2 = parseInt(localStorage.getItem('act1_'+ds2)||'0');
+      var n2 = parseInt(localStorage.getItem('act1_'+ds2)||localStorage.getItem('act_'+ds2)||'0');
       dayArr.push({ds:ds2, n:n2, label:(cur.getMonth()+1)+'/'+(cur.getDate()), dow:cur.getDay()});
       if(n2>maxVal) maxVal=n2;
       cur.setDate(cur.getDate()+1);
