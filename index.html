@@ -2624,10 +2624,14 @@ function saveTimerToday(){
 function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
 function recordActivity(){
   var k = 'act_' + todayStr();
-  var n = parseInt(localStorage.getItem(k)||'0') + 1;
-  localStorage.setItem(k, n);
+  localStorage.setItem(k, parseInt(localStorage.getItem(k)||'0') + 1);
+  // 1차 학습(전체 회독 패스) 전용 카운터
+  var tp2 = getTodayPlan();
+  if(!tp2 || tp2.status !== 'active' || tp2.isFullPass){
+    var k1 = 'act1_' + todayStr();
+    localStorage.setItem(k1, parseInt(localStorage.getItem(k1)||'0') + 1);
+  }
   updateTodayUI();
-  // 통계 기록에도 추가
   updateStatHistory();
 }
 function updateTodayUI(){
@@ -2903,32 +2907,54 @@ function renderDashboard(){
     '<div class="dash-stat"><div class="dash-stat-val" style="color:var(--warn)">'+(plan?'D-'+diffDays(today,plan.examDate):'—')+'</div><div class="dash-stat-lbl">시험까지</div></div>';
 
   // ── ⑤ 일별 학습 기록 차트 + 테이블 ─────────────────────────────
-  var actDays = parseInt(localStorage.getItem('dashActPeriod')||'30');
-  // 기간 선택 버튼 렌더
   var periodBtns = document.getElementById('dashActPeriodBtns');
-  if(periodBtns){
-    periodBtns.innerHTML = [14,30,60].map(function(d){
-      var active = d===actDays;
-      return '<button onclick="localStorage.setItem(\'dashActPeriod\',\''+d+'\');renderDashboard();" style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:'+(active?'700':'500')+';cursor:pointer;border:1px solid '+(active?'var(--c0)':'var(--border)')+';background:'+(active?'var(--c0)':'transparent')+';color:'+(active?'#fff':'var(--muted)')+';font-family:Pretendard,sans-serif;">'+d+'일</button>';
-    }).join('');
-  }
   var chart = document.getElementById('statsChart');
   var actTable = document.getElementById('dashActTable');
-  if(chart){
-    chart.innerHTML='';
-    var maxVal=1, dayArr=[];
-    var qPerDayTarget = (tp && tp.status==='active' && tp.qPerDay) ? tp.qPerDay : 0;
+  var dayArr = [], maxVal = 1;
+  // 목표: 항상 1차 학습 기준 (전체문제 / 회독일수)
+  var qPerDayTarget = 0;
+  if(tp && tp.status==='active' && plan){
+    var curRound = plan.rounds[tp.round-1];
+    if(curRound) qPerDayTarget = Math.ceil(allQ.length / curRound.days);
+  }
+
+  if(plan){
+    // 플랜 있으면 플랜 시작일 ~ 오늘만 표시, 기간 선택 버튼 숨김
+    if(periodBtns) periodBtns.innerHTML = '';
+    var planStart = plan.rounds && plan.rounds.length ? plan.rounds[0].startDate : plan.startDate;
+    var cur = parseDate(planStart);
+    while(dateStr(cur) <= today){
+      var ds2 = dateStr(cur);
+      var n2 = parseInt(localStorage.getItem('act1_'+ds2)||'0');
+      dayArr.push({ds:ds2, n:n2, label:(cur.getMonth()+1)+'/'+(cur.getDate()), dow:cur.getDay()});
+      if(n2>maxVal) maxVal=n2;
+      cur.setDate(cur.getDate()+1);
+    }
+  } else {
+    // 플랜 없으면 기간 선택 버튼 표시
+    var actDays = parseInt(localStorage.getItem('dashActPeriod')||'30');
+    if(periodBtns){
+      periodBtns.innerHTML = [14,30,60].map(function(d){
+        var active = d===actDays;
+        return '<button onclick="localStorage.setItem(\'dashActPeriod\',\''+d+'\');renderDashboard();" style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:'+(active?'700':'500')+';cursor:pointer;border:1px solid '+(active?'var(--c0)':'var(--border)')+';background:'+(active?'var(--c0)':'transparent')+';color:'+(active?'#fff':'var(--muted)')+';font-family:Pretendard,sans-serif;">'+d+'일</button>';
+      }).join('');
+    }
     for(var di2=actDays-1;di2>=0;di2--){
       var dd3=new Date(); dd3.setDate(dd3.getDate()-di2);
       var ds2=dateStr(dd3);
-      var n2=parseInt(localStorage.getItem('act_'+ds2)||'0');
-      var dow2=dd3.getDay();
-      dayArr.push({ds:ds2,n:n2,label:(dd3.getMonth()+1)+'/'+(dd3.getDate()),dow:dow2,dd:dd3});
+      var n2=parseInt(localStorage.getItem('act1_'+ds2)||parseInt(localStorage.getItem('act_'+ds2)||'0'));
+      dayArr.push({ds:ds2,n:n2,label:(dd3.getMonth()+1)+'/'+(dd3.getDate()),dow:dd3.getDay()});
       if(n2>maxVal) maxVal=n2;
     }
-    if(qPerDayTarget>maxVal) maxVal=qPerDayTarget;
+  }
+  if(qPerDayTarget>maxVal) maxVal=qPerDayTarget;
+
+  if(chart){
+    chart.innerHTML='';
+    // 막대가 너무 많으면 차트는 최근 60일만 (스크롤 대신 압축)
+    var chartDays = dayArr.length > 60 ? dayArr.slice(-60) : dayArr;
     var chartH=82;
-    dayArr.forEach(function(d){
+    chartDays.forEach(function(d){
       var col=document.createElement('div'); col.className='stats-bar-col';
       var h=Math.round((d.n/maxVal)*chartH);
       var pct=qPerDayTarget>0?d.n/qPerDayTarget:1;
@@ -2954,10 +2980,10 @@ function renderDashboard(){
       chart.appendChild(tLine);
     }
   }
-  // 일별 상세 테이블
+  // 일별 상세 테이블 (최신순, 전체)
   if(actTable){
     var DOWS=['일','월','화','수','목','금','토'];
-    var rows=dayArr.slice().reverse().slice(0,14); // 최근 14일만 테이블로
+    var rows=dayArr.slice().reverse();
     var hasTarget=qPerDayTarget>0;
     var thead='<tr><th>날짜</th><th>요일</th><th>학습량</th>'+(hasTarget?'<th>목표</th>':'')+'<th>상태</th></tr>';
     var tbody=rows.map(function(d){
