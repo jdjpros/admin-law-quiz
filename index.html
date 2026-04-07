@@ -2922,10 +2922,13 @@ function renderDashboard(){
     // 플랜 있으면 플랜 시작일 ~ 오늘만 표시, 기간 선택 버튼 숨김
     if(periodBtns) periodBtns.innerHTML = '';
     var planStart = plan.rounds && plan.rounds.length ? plan.rounds[0].startDate : plan.startDate;
+    var act1Start = localStorage.getItem('act1_tracking_start')||todayStr();
     var cur = parseDate(planStart);
     while(dateStr(cur) <= today){
       var ds2 = dateStr(cur);
-      var n2 = parseInt(localStorage.getItem('act1_'+ds2)||localStorage.getItem('act_'+ds2)||'0');
+      var n2 = ds2 >= act1Start
+        ? parseInt(localStorage.getItem('act1_'+ds2)||'0')
+        : parseInt(localStorage.getItem('act_'+ds2)||'0');
       dayArr.push({ds:ds2, n:n2, label:(cur.getMonth()+1)+'/'+(cur.getDate()), dow:cur.getDay()});
       if(n2>maxVal) maxVal=n2;
       cur.setDate(cur.getDate()+1);
@@ -2942,7 +2945,10 @@ function renderDashboard(){
     for(var di2=actDays-1;di2>=0;di2--){
       var dd3=new Date(); dd3.setDate(dd3.getDate()-di2);
       var ds2=dateStr(dd3);
-      var n2=parseInt(localStorage.getItem('act1_'+ds2)||parseInt(localStorage.getItem('act_'+ds2)||'0'));
+      var act1Start2 = localStorage.getItem('act1_tracking_start')||todayStr();
+      var n2 = ds2 >= act1Start2
+        ? parseInt(localStorage.getItem('act1_'+ds2)||'0')
+        : parseInt(localStorage.getItem('act_'+ds2)||'0');
       dayArr.push({ds:ds2,n:n2,label:(dd3.getMonth()+1)+'/'+(dd3.getDate()),dow:dd3.getDay()});
       if(n2>maxVal) maxVal=n2;
     }
@@ -4281,6 +4287,8 @@ var _origSetMode = setMode;
 })();
 
 loadState();
+// act1_ 정확 카운팅 시작일 기록 (최초 1회만)
+if(!localStorage.getItem('act1_tracking_start')) localStorage.setItem('act1_tracking_start', todayStr());
 migrateReviewFlags();
 cleanOldRvKeys();   // 3일 이상 된 임시 판정 키 자동 정리
 // 저장된 플랜에서 범위 설정 즉시 복원 (Firebase 로드 전에도 동작)
