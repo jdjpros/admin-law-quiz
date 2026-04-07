@@ -441,12 +441,26 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 .delay-btn.ignore:hover{border-color:var(--dim);}
 
 /* ── 학습 통계 차트 ── */
-.stats-chart{display:flex;align-items:flex-end;gap:4px;height:80px;padding:0 2px;}
-.stats-bar-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;}
-.stats-bar-inner{width:100%;border-radius:3px 3px 0 0;background:var(--c0);opacity:.75;transition:height .4s,opacity .2s;min-height:2px;}
+.stats-chart{display:flex;align-items:flex-end;gap:3px;height:90px;padding:0 2px;position:relative;}
+.stats-bar-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;position:relative;}
+.stats-bar-inner{width:100%;border-radius:3px 3px 0 0;background:var(--c0);opacity:.8;transition:height .4s,opacity .2s;min-height:2px;}
 .stats-bar-inner:hover{opacity:1;}
-.stats-bar-label{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--muted);}
-.stats-bar-val{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);font-weight:700;}
+.stats-bar-label{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);}
+.stats-bar-val{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--dim);font-weight:700;line-height:1;}
+.stats-target-line{position:absolute;left:0;right:0;border-top:1.5px dashed var(--warn);pointer-events:none;z-index:2;}
+/* ── 일별 학습 테이블 ── */
+.act-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;}
+.act-table th{color:var(--muted);font-weight:600;padding:4px 6px;border-bottom:1px solid var(--border);text-align:center;font-size:11px;}
+.act-table td{padding:5px 6px;border-bottom:1px solid var(--border);text-align:center;color:var(--dim);}
+.act-table tr:last-child td{border-bottom:none;}
+.act-row-today td{background:rgba(96,165,250,.07);font-weight:700;}
+.act-row-miss td{opacity:.55;}
+.act-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:700;}
+.act-badge.done{background:#d1fae5;color:#065f46;}
+.act-badge.partial{background:#fef9c3;color:#92400e;}
+.act-badge.miss{background:#fee2e2;color:#991b1b;}
+.act-badge.noplan{background:var(--surface2);color:var(--muted);}
+.act-badge.today{background:#dbeafe;color:#1d4ed8;}
 
 /* ── 로그인 오버레이 ── */
 .login-overlay{
@@ -786,10 +800,14 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       <div class="dash-stat-row" id="dashStatRow"></div>
     </div>
 
-    <!-- ⑤ 최근 14일 학습 기록 -->
+    <!-- ⑤ 일별 학습 기록 -->
     <div class="dash-section">
-      <div class="dash-title">📅 최근 14일 학습 기록</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="dash-title" style="margin-bottom:0;">📅 일별 학습 기록</div>
+        <div style="display:flex;gap:4px;" id="dashActPeriodBtns"></div>
+      </div>
       <div class="stats-chart" id="statsChart"></div>
+      <div id="dashActTable" style="margin-top:14px;"></div>
     </div>
 
     <!-- ⑥ 단원별 완료율 -->
@@ -2884,26 +2902,89 @@ function renderDashboard(){
     '<div class="dash-stat"><div class="dash-stat-val" style="color:var(--c1)">'+calcStreak()+'</div><div class="dash-stat-lbl">연속 학습일</div></div>'+
     '<div class="dash-stat"><div class="dash-stat-val" style="color:var(--warn)">'+(plan?'D-'+diffDays(today,plan.examDate):'—')+'</div><div class="dash-stat-lbl">시험까지</div></div>';
 
-  // ── ⑤ 최근 14일 차트 ─────────────────────────────
+  // ── ⑤ 일별 학습 기록 차트 + 테이블 ─────────────────────────────
+  var actDays = parseInt(localStorage.getItem('dashActPeriod')||'30');
+  // 기간 선택 버튼 렌더
+  var periodBtns = document.getElementById('dashActPeriodBtns');
+  if(periodBtns){
+    periodBtns.innerHTML = [14,30,60].map(function(d){
+      var active = d===actDays;
+      return '<button onclick="localStorage.setItem(\'dashActPeriod\',\''+d+'\');renderDashboard();" style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:'+(active?'700':'500')+';cursor:pointer;border:1px solid '+(active?'var(--c0)':'var(--border)')+';background:'+(active?'var(--c0)':'transparent')+';color:'+(active?'#fff':'var(--muted)')+';font-family:Pretendard,sans-serif;">'+d+'일</button>';
+    }).join('');
+  }
   var chart = document.getElementById('statsChart');
+  var actTable = document.getElementById('dashActTable');
   if(chart){
     chart.innerHTML='';
     var maxVal=1, dayArr=[];
-    for(var di2=13;di2>=0;di2--){
+    var qPerDayTarget = (tp && tp.status==='active' && tp.qPerDay) ? tp.qPerDay : 0;
+    for(var di2=actDays-1;di2>=0;di2--){
       var dd3=new Date(); dd3.setDate(dd3.getDate()-di2);
       var ds2=dateStr(dd3);
       var n2=parseInt(localStorage.getItem('act_'+ds2)||'0');
-      dayArr.push({ds:ds2,n:n2,label:(dd3.getMonth()+1)+'/'+(dd3.getDate())});
+      var dow2=dd3.getDay();
+      dayArr.push({ds:ds2,n:n2,label:(dd3.getMonth()+1)+'/'+(dd3.getDate()),dow:dow2,dd:dd3});
       if(n2>maxVal) maxVal=n2;
     }
+    if(qPerDayTarget>maxVal) maxVal=qPerDayTarget;
+    var chartH=82;
     dayArr.forEach(function(d){
       var col=document.createElement('div'); col.className='stats-bar-col';
-      var h=Math.round((d.n/maxVal)*72);
+      var h=Math.round((d.n/maxVal)*chartH);
+      var pct=qPerDayTarget>0?d.n/qPerDayTarget:1;
+      var barColor=d.ds===today?'#60a5fa':d.n===0?'var(--border)':pct>=1?'#34d399':pct>=0.5?'#fbbf24':'#f87171';
+      var valEl=document.createElement('div'); valEl.className='stats-bar-val';
+      valEl.textContent=d.n>0?d.n:'';
       var inner=document.createElement('div'); inner.className='stats-bar-inner';
-      inner.style.height=Math.max(h,2)+'px'; inner.title=d.label+': '+d.n+'문항';
-      var lbl=document.createElement('div'); lbl.className='stats-bar-label'; lbl.textContent=d.label.split('/')[1];
-      col.appendChild(inner); col.appendChild(lbl); chart.appendChild(col);
+      inner.style.cssText='height:'+Math.max(h,2)+'px;background:'+barColor+';';
+      inner.title=d.label+': '+d.n+'문항'+(qPerDayTarget?' / 목표 '+qPerDayTarget+'문항':'');
+      var lbl=document.createElement('div'); lbl.className='stats-bar-label';
+      lbl.textContent=d.label.split('/')[1];
+      if(d.ds===today) lbl.style.cssText='color:var(--c2);font-weight:700;';
+      col.appendChild(valEl); col.appendChild(inner); col.appendChild(lbl);
+      chart.appendChild(col);
     });
+    // 목표선 표시
+    if(qPerDayTarget>0){
+      var tLine=document.createElement('div'); tLine.className='stats-target-line';
+      var tH=Math.round((qPerDayTarget/maxVal)*chartH);
+      tLine.style.bottom=(tH+14)+'px';
+      tLine.title='일일 목표: '+qPerDayTarget+'문항';
+      chart.style.position='relative';
+      chart.appendChild(tLine);
+    }
+  }
+  // 일별 상세 테이블
+  if(actTable){
+    var DOWS=['일','월','화','수','목','금','토'];
+    var rows=dayArr.slice().reverse().slice(0,14); // 최근 14일만 테이블로
+    var hasTarget=qPerDayTarget>0;
+    var thead='<tr><th>날짜</th><th>요일</th><th>학습량</th>'+(hasTarget?'<th>목표</th>':'')+'<th>상태</th></tr>';
+    var tbody=rows.map(function(d){
+      var isToday=d.ds===today;
+      var isPast=d.ds<today;
+      var pct2=hasTarget?d.n/qPerDayTarget:1;
+      var badge='', trCls='';
+      if(isToday){
+        badge='<span class="act-badge today">진행중</span>'; trCls='act-row-today';
+      } else if(!isPast){
+        badge='<span class="act-badge noplan">예정</span>';
+      } else if(d.n===0){
+        badge='<span class="act-badge miss">미학습</span>'; trCls='act-row-miss';
+      } else if(hasTarget && pct2<1){
+        badge='<span class="act-badge partial">'+d.n+'/'+qPerDayTarget+'</span>';
+      } else {
+        badge='<span class="act-badge done">완료</span>';
+      }
+      return '<tr class="'+trCls+'">'
+        +'<td style="font-weight:'+(isToday?'700':'400')+'">'+d.label+'</td>'
+        +'<td>'+DOWS[d.dow]+'</td>'
+        +'<td style="font-family:\'JetBrains Mono\',monospace;font-weight:700;color:'+(d.n>0?'var(--correct)':'var(--muted)')+'">'+d.n+'문항</td>'
+        +(hasTarget?'<td style="font-family:\'JetBrains Mono\',monospace;color:var(--muted)">'+qPerDayTarget+'문항</td>':'')
+        +'<td>'+badge+'</td>'
+        +'</tr>';
+    }).join('');
+    actTable.innerHTML='<table class="act-table"><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table>';
   }
 
   // ── ⑥ 단원별 완료율 ──────────────────────────────
