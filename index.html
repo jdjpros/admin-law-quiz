@@ -1061,6 +1061,7 @@ function loadCloudState(uid){
       var cloudRoot = snap.val() || {};
       var cloudData = cloudRoot.state || null;
       var cloudPlan = cloudRoot.plan || null;
+      var cloudRv = cloudRoot.rv || null;
       var localData = state;
 
       if(cloudData){
@@ -1086,12 +1087,16 @@ function loadCloudState(uid){
             saveState();
             // 클라우드 플랜 복원
             if(cloudPlan){ localStorage.setItem(getPlanKey(), JSON.stringify(cloudPlan)); }
+            // 클라우드 복습모드 임시판정 복원
+            if(cloudRv){ Object.keys(cloudRv).forEach(function(k){ if(k.indexOf('rv_')===0) localStorage.setItem(k, cloudRv[k]); }); }
           }
         } else {
           state = cloudData;
           saveState();
           // 클라우드 플랜 복원 (로컬보다 우선)
           if(cloudPlan){ localStorage.setItem(getPlanKey(), JSON.stringify(cloudPlan)); }
+          // 클라우드 복습모드 임시판정 복원
+          if(cloudRv){ Object.keys(cloudRv).forEach(function(k){ if(k.indexOf('rv_')===0) localStorage.setItem(k, cloudRv[k]); }); }
         }
         // 범위 설정 복원
         var savedPlan = loadPlan();
@@ -1147,10 +1152,16 @@ function pushToCloud(uid, showMsg){
   _cloudWriting = true;
   var status = document.getElementById('syncStatus');
   if(status){ status.className = 'sync-status syncing'; status.textContent = '↻'; }
-  // 학습 판정 state + 플랜 데이터 함께 저장
+  // 학습 판정 state + 플랜 데이터 + 복습모드 임시판정 함께 저장
   var planData = loadPlan();
+  var rvData = {};
+  for(var i=0; i<localStorage.length; i++){
+    var k = localStorage.key(i);
+    if(k && k.indexOf('rv_')===0) rvData[k] = localStorage.getItem(k);
+  }
   var payload = { state: state };
   if(planData) payload.plan = planData;
+  if(Object.keys(rvData).length > 0) payload.rv = rvData;
   fbDb.ref('users/' + uid).update(payload)
     .then(function(){
       _cloudWriting = false;
