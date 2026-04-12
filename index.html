@@ -2373,7 +2373,7 @@ function updateProg(){
   });
 
   // 완료 문항 수 (모든 지문 판정 완료 기준 - 원본 state 기준)
-  var done = Qs.filter(function(q){ return isQDone(q); }).length;
+  var done = Qs.filter(function(q){ return mode==='review' ? isRvQDone(q) : isQDone(q); }).length;
 
   // 판정별 집계 (원본 state 기준)
   var m=0, cf=0, f=0;
@@ -2978,6 +2978,24 @@ function isQDone(q){
   // 일반 4지선다: _e 해설 열람 기준 (opts 빈 배열이면 false)
   if(!q.opts||q.opts.length===0) return false;
   return q.opts.every(function(o,i){return !!(state[q.id+'_e']||{})[i+1];});
+}
+
+// ── 복습모드 완료 판단 (rv 임시판정 기준) ─────────────
+// 복습모드에서는 1차 해설열람(_e) 기준인 isQDone 대신 rv 판정 여부로 완료를 판단
+function isRvQDone(q){
+  if(Q_OPTS_BOX.has(q.id)||Q_EXPS_BOX.has(q.id)){
+    var cnt=q.exps.length; if(!cnt) return false;
+    for(var i=0;i<cnt;i++){ if(getRvGnJudge(q.id,i)===null) return false; }
+    return true;
+  }
+  var parsed=parseBoxStem(q.stem);
+  var boxMode=parsed.items.length>0&&!Q3_TYPE.has(q.id);
+  if(boxMode){
+    if(parsed.items.length===0) return false;
+    return parsed.items.every(function(it){ return getRvBoxJudge(q.id,it.label)!==null; });
+  }
+  if(!q.opts||q.opts.length===0) return false;
+  return q.opts.every(function(o,i){ return getRvJudge(q.id,i+1)!==null; });
 }
 
 // ── 계획상 오늘까지 완료했어야 할 문항 수 ────────────
